@@ -6,16 +6,11 @@ const { expressjwt: jwt } = require('express-jwt');
 const jwksRsa = require('jwks-rsa');
 
 const app = express();
-
-const corsOptions = {
+app.use(cors({
   origin: 'https://spendy-beta.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
-};
+}));
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
 app.use(express.json());
 
 // Connect to MongoDB
