@@ -4,6 +4,8 @@ import styles from '../styles/BudgetOverview.module.css';
 import ExpenseTracker from './ExpenseTracker';
 import SummaryCards from './SummaryCards';
 
+const API_URL = process.env.REACT_APP_API_URL || 'https://spendy-beta.onrender.com/api';
+
 function BudgetOverview() {
   const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
 
@@ -20,7 +22,7 @@ function BudgetOverview() {
         scope: 'read:expenses write:expenses',
       });
 
-      const response = await fetch('/api/budget', {
+      const response = await fetch(`${API_URL}/budget`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -54,7 +56,7 @@ function BudgetOverview() {
         scope: 'read:expenses write:budget',
       });
 
-      const response = await fetch('/api/expenses', {
+      const response = await fetch(`${API_URL}/expenses`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
