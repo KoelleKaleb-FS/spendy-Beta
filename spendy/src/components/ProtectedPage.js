@@ -6,6 +6,8 @@ import SummaryCards from './SummaryCards';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://spendy-beta.onrender.com/api';
 
+console.log('Access Token:', token);
+
 function BudgetOverview() {
   const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
 

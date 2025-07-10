@@ -34,6 +34,13 @@ const jwtCheck = jwt({
   audience: process.env.AUTH0_AUDIENCE,
   issuer: `https://${process.env.AUTH0_DOMAIN}/`,
   algorithms: ['RS256'],
+}).unless({ path: ['/'] });
+
+app.use((req, res, next) => {
+  if (req.auth) {
+    console.log('JWT payload:', req.auth);
+  }
+  next();
 });
 
 // Dev bypass middleware
