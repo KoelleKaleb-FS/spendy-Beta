@@ -1,4 +1,4 @@
-const API_URL = 'https://spendy-beta.onrender.com';
+const API_URL = 'https://spendy-beta.onrender.com/api';
 
 export const createBudget = async (totalBudget) => {
   const response = await fetch(`${API_URL}/budget`, {
