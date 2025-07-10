@@ -1,0 +1,90 @@
+/* Homepage.module.css */
+
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #f8fafc, #e1e8f0);
+  height: 100vh; /* Full viewport height */
+}
+
+.logo {
+  width: 300px;
+  height: auto;
+  margin: 0 auto 30px; /* Center image and add space below */
+  object-fit: contain;
+}
+
+.title {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  color: #222;
+}
+
+.tagline {
+  font-size: 1.3rem;
+  margin-bottom: 50px;
+  color: #444;
+  line-height: 1.5;
+}
+
+.button {
+  padding: 14px 36px;
+  font-size: 1.2rem;
+  background-color: #007bff;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.button:hover {
+  background-color: #0056b3;
+  box-shadow: 0 6px 12px rgba(0, 86, 179, 0.5);
+}
+
+.features {
+  margin-top: 50px;
+  text-align: left;
+  max-width: 600px;
+  color: #555;
+}
+
+.features h2 {
+  font-size: 1.8rem;
+  color: #222;
+  margin-bottom: 20px;
+}
+
+.features ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.features li {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  position: relative;
+}
+
+.features li::before {
+  content: '✔';
+  color: #007bff;
+  margin-right: 10px;
+}
+
+.testimonials {
+  margin-top: 50px;
+  font-style: italic;
+  color: #333;
+  border-left: 4px solid #007bff;
+  padding-left: 15px;
+}

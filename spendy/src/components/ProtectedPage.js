@@ -1,0 +1,128 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
+import styles from '../styles/BudgetOverview.module.css';
+import ExpenseTracker from './ExpenseTracker';
+import SummaryCards from './SummaryCards';
+
+function BudgetOverview() {
+  const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
+
+  const [budgetData, setBudgetData] = useState(null);
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Fetch budget data
+  const fetchBudgetData = useCallback(async () => {
+    try {
+      const token = await getAccessTokenSilently({
+        audience: 'https://spendy-api',
+        scope: 'read:expenses write:expenses',
+      });
+
+      const response = await fetch('/api/budget', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.status === 404) {
+        setError('No budget found for your account.');
+        setBudgetData(null);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch budget data');
+      }
+
+      const data = await response.json();
+      setBudgetData(data);
+      setError('');
+    } catch (err) {
+      setError(err.message);
+      setBudgetData(null);
+    }
+  }, [getAccessTokenSilently]);
+
+  // Fetch expenses
+  const fetchExpenses = useCallback(async () => {
+    try {
+      const token = await getAccessTokenSilently({
+        audience: 'https://spendy-api',
+        scope: 'read:expenses write:budget',
+      });
+
+      const response = await fetch('/api/expenses', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch expenses');
+      }
+
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        const cleanedData = data.map((exp) => ({
+          ...exp,
+          amount: typeof exp.amount === 'string' ? parseFloat(exp.amount) : exp.amount,
+        }));
+        setExpenses(cleanedData);
+        setError('');
+      } else {
+        setError('Unexpected expenses API response format.');
+      }
+    } catch (err) {
+      setError(err.message);
+      setExpenses([]);
+    }
+  }, [getAccessTokenSilently]);
+
+  // Combined refresh function to update both budget and expenses
+  const refreshAllData = useCallback(async () => {
+    setLoading(true);
+    await Promise.all([fetchBudgetData(), fetchExpenses()]);
+    setLoading(false);
+  }, [fetchBudgetData, fetchExpenses]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      refreshAllData();
+    }
+  }, [isAuthenticated, refreshAllData]);
+
+  if (!isAuthenticated) {
+    return <p>Please log in to view your budget overview.</p>;
+  }
+
+  return (
+    <div className={styles.container}>
+      <h1 className={styles.title}>Budget Overview</h1>
+      <p className={styles.welcome}>Welcome, {user?.name}!</p>
+
+      {loading ? (
+        <p>Loading your data...</p>
+      ) : error ? (
+        <p style={{ color: 'red' }}>{error}</p>
+      ) : (
+        <>
+          {/* Show summary cards */}
+          <SummaryCards expenses={expenses} budgetData={budgetData} />
+
+          {/* Pass expenses and refresh function to ExpenseTracker */}
+          <ExpenseTracker
+            expenses={expenses}
+            setExpenses={setExpenses}
+            refreshBudget={refreshAllData}
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
+export default BudgetOverview;

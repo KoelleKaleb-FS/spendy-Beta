@@ -1,0 +1,27 @@
+# Dependency Directory
+node_modules/
+package-lock.json
+
+# Mac OS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Logs
+Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ENV Vars
+.env
+
+# Images, PDFs, ZIPs, etc. 
+# Before committing a binary file, make sure it's really necessary.
+# If you're sure, uncomment the following lines.
+# *.jpg
+# *.png
+# *.zip
+# *.pdf
