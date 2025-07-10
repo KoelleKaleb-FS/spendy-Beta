@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 
 const app = express();
 app.use(cors({
-  origin: 'http://localhost:3000'
+  origin: 'https://spendy-beta.vercel.app'
 }));
 app.use(express.json());
 
