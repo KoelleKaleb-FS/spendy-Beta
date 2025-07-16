@@ -1,22 +1,27 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import styles from '../styles/BudgetOverview.module.css';
 import ExpenseTracker from './ExpenseTracker';
 import SummaryCards from './SummaryCards';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://spendy-beta.onrender.com/api';
 
-// Use a fixed fake token for dev bypass
-const token = 'fake-token-for-dev';
-
 function BudgetOverview() {
+  const { getAccessTokenSilently, isAuthenticated } = useAuth0();
+
   const [budgetData, setBudgetData] = useState(null);
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Fetch budget data without Auth0 token call
   const fetchBudgetData = useCallback(async () => {
+    if (!isAuthenticated) return;
+
     try {
+      const token = await getAccessTokenSilently({
+        audience: 'https://spendy-api',
+      });
+
       const response = await fetch(`${API_URL}/budget`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -41,11 +46,16 @@ function BudgetOverview() {
       setError(err.message);
       setBudgetData(null);
     }
-  }, []);
+  }, [getAccessTokenSilently, isAuthenticated]);
 
-  // Fetch expenses without Auth0 token call
   const fetchExpenses = useCallback(async () => {
+    if (!isAuthenticated) return;
+
     try {
+      const token = await getAccessTokenSilently({
+        audience: 'https://spendy-api',
+      });
+
       const response = await fetch(`${API_URL}/expenses`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -72,19 +82,23 @@ function BudgetOverview() {
       setError(err.message);
       setExpenses([]);
     }
-  }, []);
+  }, [getAccessTokenSilently, isAuthenticated]);
 
-  // Refresh both budget and expenses
   const refreshAllData = useCallback(async () => {
     setLoading(true);
     await Promise.all([fetchBudgetData(), fetchExpenses()]);
     setLoading(false);
   }, [fetchBudgetData, fetchExpenses]);
 
-  // Call refresh on mount (no Auth0 required)
   useEffect(() => {
-    refreshAllData();
-  }, [refreshAllData]);
+    if (isAuthenticated) {
+      refreshAllData();
+    }
+  }, [refreshAllData, isAuthenticated]);
+
+  if (!isAuthenticated) {
+    return <p>Please log in to view your budget overview.</p>;
+  }
 
   return (
     <div className={styles.container}>
@@ -98,8 +112,7 @@ function BudgetOverview() {
         <>
           <SummaryCards expenses={expenses} budgetData={budgetData} />
           <ExpenseTracker
-            expenses={expenses}
-            setExpenses={setExpenses}
+            budgetData={budgetData}
             refreshBudget={refreshAllData}
           />
         </>

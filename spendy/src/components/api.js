@@ -1,10 +1,11 @@
 const API_URL = 'https://spendy-beta.onrender.com/api';
 
-export const createBudget = async (totalBudget) => {
+export const createBudget = async (totalBudget, token) => {
   const response = await fetch(`${API_URL}/budget`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ totalBudget }),
   });
@@ -16,11 +17,12 @@ export const createBudget = async (totalBudget) => {
   return response.json();
 };
 
-export const getBudget = async () => {
+export const getBudget = async (token) => {
   const response = await fetch(`${API_URL}/budget`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
     },
   });
 
