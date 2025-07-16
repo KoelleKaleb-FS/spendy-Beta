@@ -1,49 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { createBudget, getBudget } from './api';
 import { useAuth0 } from '@auth0/auth0-react';
+import { createBudget, getBudget } from './api';
 
 const BudgetManager = () => {
-  const { getAccessTokenSilently} = useAuth0();
+  const { getAccessTokenSilently } = useAuth0();
   const [budget, setBudget] = useState(null);
   const [newBudget, setNewBudget] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
-  const fetchBudget = async () => {
+    const fetchBudget = async () => {
+      try {
+        const token = await getAccessTokenSilently({
+          audience: 'https://spendy-api',
+        });
+        const data = await getBudget(token);
+        setBudget(data);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    fetchBudget();
+  }, [getAccessTokenSilently]);
+
+  const handleCreateBudget = async () => {
     try {
-      const token = await getAccessTokenSilently({
-        audience: 'https://spendy-api',  // ✅ Required
-      });
-      const data = await getBudget(token);
+      const token = await getAccessTokenSilently({audience: 'https://spendy-api',});
+      const data = await createBudget(Number(newBudget), token);
       setBudget(data);
+      setNewBudget('');
+      setError('');
     } catch (err) {
-      console.error(err.message);
+      setError(err.message);
     }
   };
-
-  fetchBudget();
-}, [getAccessTokenSilently]);
-
-
-const handleCreateBudget = async () => {
-  try {
-    const token = await getAccessTokenSilently({
-      audience: 'https://spendy-api',   // ✅ Required
-    });
-    console.log("Access Token:", token)
-    const data = await createBudget(Number(newBudget), token);
-    setBudget(data);
-    setNewBudget('');
-  } catch (err) {
-    console.error(err.message);
-  }
-};
 
   return (
     <div>
       <h1>Budget Manager</h1>
+      {error && <p style={{color: 'red'}}>{error}</p>}
       {budget ? (
         <div>
-          <p>Total Budget: ${budget.totalBudget}</p>
+          <p>Total Budget: ${budget.amount}</p>
           <p>Expenses: ${budget.expenses || 0}</p>
           <p>Remaining: ${budget.remaining}</p>
         </div>
