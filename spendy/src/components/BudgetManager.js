@@ -3,42 +3,40 @@ import { createBudget, getBudget } from './api';
 import { useAuth0 } from '@auth0/auth0-react';
 
 const BudgetManager = () => {
-  const { getAccessTokenSilently, isAuthenticated } = useAuth0();
+  const { getAccessTokenSilently} = useAuth0();
   const [budget, setBudget] = useState(null);
   const [newBudget, setNewBudget] = useState('');
 
   useEffect(() => {
-    const fetchBudget = async () => {
-      if (!isAuthenticated) return;
-
-      try {
-        const token = await getAccessTokenSilently({
-          audience: 'https://spendy-api',
-        });
-
-        const data = await getBudget(token);
-        setBudget(data);
-      } catch (err) {
-        console.error(err.message);
-      }
-    };
-
-    fetchBudget();
-  }, [getAccessTokenSilently, isAuthenticated]);
-
-  const handleCreateBudget = async () => {
+  const fetchBudget = async () => {
     try {
       const token = await getAccessTokenSilently({
-        audience: 'https://spendy-api',
+        audience: 'https://spendy-api',  // ✅ Required
       });
-
-      const data = await createBudget(Number(newBudget), token);
+      const data = await getBudget(token);
       setBudget(data);
-      setNewBudget('');
     } catch (err) {
       console.error(err.message);
     }
   };
+
+  fetchBudget();
+}, [getAccessTokenSilently]);
+
+
+const handleCreateBudget = async () => {
+  try {
+    const token = await getAccessTokenSilently({
+      audience: 'https://spendy-api',   // ✅ Required
+    });
+    console.log("Access Token:", token)
+    const data = await createBudget(Number(newBudget), token);
+    setBudget(data);
+    setNewBudget('');
+  } catch (err) {
+    console.error(err.message);
+  }
+};
 
   return (
     <div>

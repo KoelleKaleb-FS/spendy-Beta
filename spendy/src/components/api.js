@@ -5,7 +5,7 @@ export const createBudget = async (totalBudget, token) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,   // 🔥 Add token here
     },
     body: JSON.stringify({ totalBudget }),
   });
@@ -22,7 +22,7 @@ export const getBudget = async (token) => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,  // 🔥 Add token here
     },
   });
 
