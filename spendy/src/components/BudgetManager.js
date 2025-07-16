@@ -13,6 +13,7 @@ const BudgetManager = () => {
       try {
         const token = await getAccessTokenSilently({
           audience: 'https://spendy-api',
+          scope: 'read:budget write:budget'
         });
         const data = await getBudget(token);
         setBudget(data);
@@ -26,7 +27,10 @@ const BudgetManager = () => {
 
   const handleCreateBudget = async () => {
     try {
-      const token = await getAccessTokenSilently({audience: 'https://spendy-api',});
+      const token = await getAccessTokenSilently({
+        audience: 'https://spendy-api',
+        scope: 'read:budget write:budget'
+      });
       const data = await createBudget(Number(newBudget), token);
       setBudget(data);
       setNewBudget('');

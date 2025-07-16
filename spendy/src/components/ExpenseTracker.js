@@ -123,6 +123,7 @@ function ExpenseTracker({ budgetData, refreshBudget }) {
     try {
       const token = await getAccessTokenSilently({
         audience: 'https://spendy-api',
+        scope: 'read:budget write:budget'
       });
 
       const expenseToSend = { ...newExpense, amount: parsedAmount };

@@ -18,6 +18,7 @@ export const createBudget = async (totalBudget, token) => {
 };
 
 export const getBudget = async (token) => {
+  console.log('Sending token to backend:', token);
   const response = await fetch(`${API_URL}/budget`, {
     method: 'GET',
     headers: {
