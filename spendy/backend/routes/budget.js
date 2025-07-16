@@ -23,16 +23,16 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const userId = req.auth.sub;
-    const totalBudget = req.body.amount;
+    const totalBudget = req.body.amount || req.body.totalBudget;
 
     let budget = await Budget.findOne({ userId });
 
     if (budget) {
-      budget.amount = totalBudget;
+      budget.totalBudget = totalBudget;
     } else {
       budget = new Budget({
         userId,
-        amount: totalBudget,
+        totalBudget: totalBudget,
       });
     }
 
