@@ -192,32 +192,33 @@ function ExpenseTracker({ budgetData, refreshBudget }) {
   }
 
   async function handleDeleteExpense(id) {
-    if (!window.confirm('Are you sure you want to delete this expense?')) return;
+  if (!window.confirm('Are you sure you want to delete this expense?')) return;
 
-    try {
-      const token = await getAccessTokenSilently({
-        audience: 'https://spendy-api',
-      });
+  try {
+    const token = await getAccessTokenSilently({
+      audience: 'https://spendy-api',
+    });
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}expenses/${id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/expenses/${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete expense');
-      }
-
-      setExpenses((prev) => prev.filter((exp) => exp._id !== id));
-      setError('');
-
-      if (refreshBudget) await refreshBudget();
-    } catch (err) {
-      setError(err.message);
+    if (!response.ok) {
+      throw new Error('Failed to delete expense');
     }
+
+    // Safely remove the expense
+    setExpenses((prev) => prev.filter((exp) => exp._id.toString() !== id.toString()));
+    setError('');
+
+    if (refreshBudget) await refreshBudget();
+  } catch (err) {
+    setError(err.message);
   }
+}
 
   function handleExportCSV() {
     const csvRows = [

@@ -6,7 +6,7 @@ const Budget = require('../models/Budget');
 // GET: Fetch all expenses for logged-in user
 router.get('/', async (req, res) => {
   try {
-    const userId = req.auth.sub; // User ID from JWT
+    const userId = req.auth.sub;
     const expenses = await Expense.find({ userId });
     res.json(expenses);
   } catch (err) {
@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST: Add a new expense for logged-in user
+// POST: Add a new expense and update budget
 router.post('/', async (req, res) => {
   try {
     const userId = req.auth.sub;
@@ -32,26 +32,16 @@ router.post('/', async (req, res) => {
     const savedExpense = await expense.save();
 
     // Update budget after adding expense
-    const budget = await Budget.findOne({ userId });
-    if (budget) {
-      const newTotalExpenses = (await Expense.aggregate([
-        { $match: { userId } },
-        { $group: { _id: null, total: { $sum: "$amount" } } }
-      ]))[0]?.total || 0;
+    await recalculateBudget(userId);
 
-      budget.expenses = newTotalExpenses;
-      budget.remaining = budget.totalBudget - newTotalExpenses;
-      await budget.save();
-    }
-
-    res.json(savedExpense);
+    res.status(201).json(savedExpense);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to add expense' });
   }
 });
 
-// PUT: Update an existing expense if owned by logged-in user
+// PUT: Update an existing expense and update budget
 router.put('/:id', async (req, res) => {
   try {
     const userId = req.auth.sub;
@@ -70,18 +60,8 @@ router.put('/:id', async (req, res) => {
 
     const updatedExpense = await expense.save();
 
-    // Update budget after updating expense
-    const budget = await Budget.findOne({ userId });
-    if (budget) {
-      const newTotalExpenses = (await Expense.aggregate([
-        { $match: { userId } },
-        { $group: { _id: null, total: { $sum: "$amount" } } }
-      ]))[0]?.total || 0;
-
-      budget.expenses = newTotalExpenses;
-      budget.remaining = budget.totalBudget - newTotalExpenses;
-      await budget.save();
-    }
+    // Update budget after editing expense
+    await recalculateBudget(userId);
 
     res.json(updatedExpense);
   } catch (err) {
@@ -90,49 +70,19 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE: Remove an expense if owned by logged-in user and update budget
+// DELETE: Remove an expense and update budget
 router.delete('/:id', async (req, res) => {
   try {
     const userId = req.auth.sub;
     const expenseId = req.params.id;
 
-    console.log('DELETE endpoint triggered for id:', expenseId);
-
-    // Delete the expense
     const expense = await Expense.findOneAndDelete({ _id: expenseId, userId });
     if (!expense) {
-      console.log(`Expense not found for id: ${expenseId} and user: ${userId}`);
       return res.status(404).json({ message: 'Expense not found or unauthorized' });
     }
 
-    console.log(`Deleted expense ${expenseId} for user ${userId}`);
-
-    // Recalculate total expenses for the user AFTER deletion
-    const newTotalExpenses = (await Expense.aggregate([
-      { $match: { userId } },
-      { $group: { _id: null, total: { $sum: "$amount" } } }
-    ]))[0]?.total || 0;
-
-    console.log(`Total expenses after deletion: ${newTotalExpenses}`);
-
-    // Find or create a budget for the user
-    let budget = await Budget.findOne({ userId });
-    if (!budget) {
-      console.log('No budget found for user. Creating a new budget.');
-      budget = new Budget({
-        userId,
-        totalBudget: 0, // Default to 0; you can customize this
-        expenses: newTotalExpenses,
-        remaining: 0 - newTotalExpenses,
-      });
-    } else {
-      // Update the existing budget
-      budget.expenses = newTotalExpenses;
-      budget.remaining = budget.totalBudget - newTotalExpenses;
-    }
-
-    await budget.save();
-    console.log(`Budget updated: expenses = ${budget.expenses}, remaining = ${budget.remaining}`);
+    // Update budget after deleting expense
+    await recalculateBudget(userId);
 
     res.json({ message: 'Expense deleted and budget updated' });
   } catch (err) {
@@ -141,5 +91,31 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// Helper: Recalculate budget expenses/remaining
+async function recalculateBudget(userId) {
+  const totalExpenses = (
+    await Expense.aggregate([
+      { $match: { userId } },
+      { $group: { _id: null, total: { $sum: "$amount" } } }
+    ])
+  )[0]?.total || 0;
+
+  let budget = await Budget.findOne({ userId });
+
+  if (!budget) {
+    // If no budget exists, create one with default totalBudget = 0
+    budget = new Budget({
+      userId,
+      totalBudget: 0,
+      expenses: totalExpenses,
+      remaining: -totalExpenses, // Negative balance until user sets a budget
+    });
+  } else {
+    budget.expenses = totalExpenses;
+    budget.remaining = budget.totalBudget - totalExpenses;
+  }
+
+  await budget.save();
+}
 
 module.exports = router;

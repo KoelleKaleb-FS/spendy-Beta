@@ -2,39 +2,54 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const { auth } = require('express-oauth2-jwt-bearer');
 
 const app = express();
 
+// CORS setup
+const allowedOrigins = [
+  'https://spendy-beta.vercel.app',
+  'http://localhost:3000'
+];
+
 app.use(cors({
-  origin: 'https://spendy-beta.vercel.app',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 
 app.use(express.json());
 
-// Connect to MongoDB
+// MongoDB connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Middleware that just fakes an authenticated user for ALL requests
-const fakeAuth = (req, res, next) => {
-  req.auth = { sub: 'bypass-user' }; // Fake user ID
-  next();
-};
+// Auth0 JWT middleware
+const jwtCheck = auth({
+  audience: 'https://spendy-api', // Must match frontend & Auth0 API
+  issuerBaseURL: 'https://dev-rcl8pcpcwm5cxd17.us.auth0.com', // Your Auth0 domain
+});
 
-// Import your routers
+// Import routers
 const expensesRouter = require('./routes/expenses');
 const budgetRouter = require('./routes/budget');
 
-// Apply fakeAuth middleware to all API routes to bypass auth
-app.use('/api/expenses', fakeAuth, expensesRouter);
-app.use('/api/budget', fakeAuth, budgetRouter);
+// Apply jwtCheck to API routes (real authentication)
+app.use('/api/expenses', jwtCheck, expensesRouter);
+app.use('/api/budget', jwtCheck, budgetRouter);
 
+// Root route (health check)
 app.get('/', (req, res) => {
-  res.send('Expense Tracker API is running without auth!');
+  res.send('Spendy API is running with Auth0 authentication!');
 });
 
+// Server listen
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

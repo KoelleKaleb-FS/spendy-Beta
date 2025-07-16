@@ -1,40 +1,39 @@
 const express = require('express');
 const router = express.Router();
 const Budget = require('../models/Budget');
-const Expense = require('../models/Expense'); // <-- Added import of Expense model
+const Expense = require('../models/Expense');
 
-// GET: Fetch budget for logged-in user
+// Get budget for logged-in user
 router.get('/', async (req, res) => {
   try {
     const userId = req.auth.sub;
     const budget = await Budget.findOne({ userId });
+
     if (!budget) {
-      return res.status(404).json({ message: 'Budget not found' });
+      return res.status(404).json({ message: 'No budget found.' });
     }
+
     res.json(budget);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Failed to fetch budget' });
+    res.status(500).json({ message: err.message });
   }
 });
 
-// POST: Create or update budget for logged-in user
+// Create or update budget and recalculate expenses
 router.post('/', async (req, res) => {
   try {
     const userId = req.auth.sub;
-    const { totalBudget } = req.body;
-
-    if (typeof totalBudget !== 'number' || totalBudget < 0) {
-      return res.status(400).json({ message: 'Invalid budget value' });
-    }
+    const totalBudget = req.body.amount;
 
     let budget = await Budget.findOne({ userId });
+
     if (budget) {
-      // Update existing budget
-      budget.totalBudget = totalBudget;
+      budget.amount = totalBudget;
     } else {
-      // Create new budget
-      budget = new Budget({ userId, totalBudget });
+      budget = new Budget({
+        userId,
+        amount: totalBudget,
+      });
     }
 
     // Recalculate expenses total
@@ -44,10 +43,12 @@ router.post('/', async (req, res) => {
     ]);
     const totalExpenses = expensesTotalAgg[0]?.total || 0;
 
+    // Add extra fields to budget (if your schema allows)
     budget.expenses = totalExpenses;
     budget.remaining = totalBudget - totalExpenses;
 
     await budget.save();
+
     res.json(budget);
   } catch (err) {
     console.error(err);
