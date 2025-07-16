@@ -17,7 +17,10 @@ function App() {
     <Auth0Provider
       domain={authConfig.domain}
       clientId={authConfig.clientId}
-      authorizationParams={{ redirect_uri: authConfig.redirectUri }}
+      authorizationParams={{ 
+        redirect_uri: authConfig.redirectUri,
+       audience: authConfig.audience,
+      scope: 'openid profile email read:budget write:budget', }}
     >
       <Router>
         <Navigation />
