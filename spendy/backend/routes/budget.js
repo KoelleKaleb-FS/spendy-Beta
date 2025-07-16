@@ -22,7 +22,10 @@ router.get('/', async (req, res) => {
 // Create or update budget and recalculate expenses
 router.post('/', async (req, res) => {
   try {
-    const userId = req.auth.sub;
+     const userId = req.auth?.sub;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized: No user ID found in token' });
+    }
     const totalBudget = req.body.amount || req.body.totalBudget;
 
     let budget = await Budget.findOne({ userId });

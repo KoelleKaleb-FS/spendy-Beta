@@ -5,6 +5,7 @@ const Budget = require('../models/Budget');
 
 // GET: Fetch all expenses for logged-in user
 router.get('/', async (req, res) => {
+  console.log('Auth info:', req.auth); 
   try {
     const userId = req.auth.sub;
     const expenses = await Expense.find({ userId });
@@ -17,8 +18,9 @@ router.get('/', async (req, res) => {
 
 // POST: Add a new expense and update budget
 router.post('/', async (req, res) => {
+  console.log('Auth info:', req.auth); 
   try {
-    const userId = req.auth.sub;
+    const userId = req.auth?.sub;
     const { description, amount, category, date } = req.body;
 
     const expense = new Expense({
@@ -43,6 +45,7 @@ router.post('/', async (req, res) => {
 
 // PUT: Update an existing expense and update budget
 router.put('/:id', async (req, res) => {
+  console.log('Auth info:', req.auth); 
   try {
     const userId = req.auth.sub;
     const expenseId = req.params.id;
@@ -72,6 +75,7 @@ router.put('/:id', async (req, res) => {
 
 // DELETE: Remove an expense and update budget
 router.delete('/:id', async (req, res) => {
+  console.log('Auth info:', req.auth); 
   try {
     const userId = req.auth.sub;
     const expenseId = req.params.id;
