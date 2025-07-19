@@ -46,7 +46,7 @@ const BudgetManager = () => {
       {error && <p style={{color: 'red'}}>{error}</p>}
       {budget ? (
         <div>
-          <p>Total Budget: ${budget.amount}</p>
+          <p>Total Budget: ${budget.totalBudget}</p>
           <p>Expenses: ${budget.expenses || 0}</p>
           <p>Remaining: ${budget.remaining}</p>
         </div>
