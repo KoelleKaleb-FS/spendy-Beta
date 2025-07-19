@@ -3,14 +3,17 @@ const router = express.Router();
 const Budget = require('../models/Budget');
 const Expense = require('../models/Expense');
 
-// Get budget for logged-in user
+// GET /api/budget - Fetch budget for logged-in user
 router.get('/', async (req, res) => {
-  console.log('GET /api/budget hit, user:', req.user?.sub);
+  console.log('GET /api/budget hit');
 
   try {
-    const userId = req.user.sub;
+    if (!req.user || !req.user.sub) {
+      console.error('❌ No user info in token');
+      return res.status(401).json({ message: 'Unauthorized: No user ID found in token' });
+    }
 
-    if (!userId) return res.status(401).json({ message: 'Unauthorized: No user ID found in token' });
+    const userId = req.user.sub;
 
     const budget = await Budget.findOne({ userId });
 
@@ -20,28 +23,36 @@ router.get('/', async (req, res) => {
 
     res.json(budget);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('Error fetching budget:', err);
+    res.status(500).json({ message: 'Server error fetching budget' });
   }
 });
 
+// POST /api/budget - Create or update budget
 router.post('/', async (req, res) => {
-  console.log('POST /api/budget hit, user:', req.user?.sub);
+  console.log('POST /api/budget hit');
 
   try {
+    if (!req.user || !req.user.sub) {
+      console.error('❌ No user info in token');
+      return res.status(401).json({ message: 'Unauthorized: No user ID found in token' });
+    }
+
     const userId = req.user.sub;
 
-    if (!userId) return res.status(401).json({ message: 'Unauthorized: No user ID found in token' });
-
-    const totalBudget = req.body.amount || req.body.totalBudget;
+    const amount = req.body.amount;
+    if (typeof amount !== 'number' || isNaN(amount)) {
+      return res.status(400).json({ message: 'Invalid budget amount' });
+    }
 
     let budget = await Budget.findOne({ userId });
 
     if (budget) {
-      budget.totalBudget = totalBudget;
+      budget.totalBudget = amount;
     } else {
       budget = new Budget({
         userId,
-        totalBudget: totalBudget,
+        totalBudget: amount,
       });
     }
 
@@ -53,14 +64,14 @@ router.post('/', async (req, res) => {
     const totalExpenses = expensesTotalAgg[0]?.total || 0;
 
     budget.expenses = totalExpenses;
-    budget.remaining = totalBudget - totalExpenses;
+    budget.remaining = amount - totalExpenses;
 
     await budget.save();
 
     res.json(budget);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Failed to create/update budget' });
+    console.error('Error saving budget:', err);
+    res.status(500).json({ message: 'Server error saving budget' });
   }
 });
 

@@ -27,11 +27,10 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Auth0 JWT middleware using express-jwt + jwks-rsa
 const jwtCheck = jwt({
-  // Dynamically provide a signing key based on the kid in the header and the signing keys provided by the JWKS endpoint.
   secret: jwksRsa.expressJwtSecret({
-    cache: true,                  // cache the signing key
-    rateLimit: true,              // rate limit calls to JWKS endpoint
-    jwksRequestsPerMinute: 5,     // max 5 calls per minute
+    cache: true,          
+    rateLimit: true,            
+    jwksRequestsPerMinute: 5,   
     jwksUri: 'https://dev-rcl8pcpcwm5cxd17.us.auth0.com/.well-known/jwks.json'
   }),
 
@@ -46,7 +45,10 @@ const budgetRouter = require('./routes/budget');
 
 // Protect API routes with jwtCheck middleware
 app.use('/api/expenses', jwtCheck, expensesRouter);
-app.use('/api/budget', jwtCheck, budgetRouter);
+app.use('/api/budget', jwtCheck, (req, res, next) => {
+  console.log('Decoded JWT:', req.user);
+  next();
+}, budgetRouter);
 
 app.get('/api/test-auth', jwtCheck, (req, res) => {
   console.log('✅ Test route hit. Decoded token:', req.user);
