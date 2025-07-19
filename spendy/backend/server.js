@@ -13,15 +13,10 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: allowedOrigins,
   credentials: true,
 }));
+
 
 app.use(express.json());
 
@@ -30,10 +25,17 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
+  app.use('/api/budget', (req, res, next) => {
+  console.log('Authorization header:', req.headers.authorization);
+  next();
+});
+
+
 // Auth0 JWT middleware
 const jwtCheck = auth({
   audience: 'https://spendy-api',
   issuerBaseURL: 'https://dev-rcl8pcpcwm5cxd17.us.auth0.com/',
+  algorthim: ['RS256'],
 });
 
 
