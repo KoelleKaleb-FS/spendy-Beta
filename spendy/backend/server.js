@@ -32,7 +32,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Auth0 JWT middleware
 const jwtCheck = auth({
-  audience: ['https://spendy-api', 'https://dev-rcl8pcpcwm5cxd17.us.auth0.com/userinfo'],
+  audience: 'https://spendy-api',
   issuerBaseURL: 'https://dev-rcl8pcpcwm5cxd17.us.auth0.com/',
 });
 
@@ -43,7 +43,19 @@ const budgetRouter = require('./routes/budget');
 
 // Apply jwtCheck to API routes (real authentication)
 app.use('/api/expenses', jwtCheck, expensesRouter);
-app.use('/api/budget', jwtCheck, budgetRouter);
+app.use('/api/budget', jwtCheck, (req, res, next) => {
+  console.log('User Auth Payload:', req.auth); 
+  next();
+}, budgetRouter);
+
+app.get('/api/test-auth', jwtCheck, (req, res) => {
+  console.log('✅ Test route hit. Decoded token:', req.auth);
+
+  res.json({
+    message: 'Token is valid!',
+    authPayload: req.auth,
+  });
+});
 
 // Root route (health check)
 app.get('/', (req, res) => {

@@ -5,7 +5,7 @@ const Budget = require('../models/Budget');
 
 // GET: Fetch all expenses for logged-in user
 router.get('/', async (req, res) => {
-  console.log('Auth info:', req.auth); 
+console.log('Received token auth info:', req.auth);
   try {
     const userId = req.auth.sub;
     const expenses = await Expense.find({ userId });

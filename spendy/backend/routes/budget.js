@@ -5,6 +5,7 @@ const Expense = require('../models/Expense');
 
 // Get budget for logged-in user
 router.get('/', async (req, res) => {
+    console.log('GET /api/budget hit, user:', req.auth?.sub);
   try {
     const userId = req.auth.sub;
     const budget = await Budget.findOne({ userId });
@@ -21,6 +22,7 @@ router.get('/', async (req, res) => {
 
 // Create or update budget and recalculate expenses
 router.post('/', async (req, res) => {
+    console.log('POST /api/budget hit, user:', req.auth?.sub);
   try {
      const userId = req.auth?.sub;
     if (!userId) {
