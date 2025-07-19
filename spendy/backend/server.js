@@ -39,6 +39,14 @@ const jwtCheck = jwt({
   algorithms: ['RS256']
 });
 
+app.use((err, req, res, next) => {
+  if (err.name === 'UnauthorizedError') {
+    console.error('JWT Error:', err);
+    return res.status(401).json({ message: 'Invalid token', details: err.message });
+  }
+  next(err);
+});
+
 // Import routers
 const expensesRouter = require('./routes/expenses');
 const budgetRouter = require('./routes/budget');
