@@ -1,12 +1,12 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useAuth0 } from '@auth0/auth0-react';
 import styles from '../styles/Homepage.module.css';
 
 function Homepage() {
-  const navigate = useNavigate();
+  const { loginWithRedirect, isAuthenticated } = useAuth0();
 
   const handleGetStarted = () => {
-    navigate('/signup');  // Navigate to signup page
+    loginWithRedirect();  // Redirects to Auth0 Login/Signup
   };
 
   return (
@@ -26,9 +26,12 @@ function Homepage() {
         </ul>
       </div>
 
-      <button className={styles.getStartedButton} onClick={handleGetStarted}>
-        Get Started
-      </button>
+      {/* Only show Get Started if not logged in */}
+      {!isAuthenticated && (
+        <button className={styles.getStartedButton} onClick={handleGetStarted}>
+          Get Started
+        </button>
+      )}
 
       <div className={styles.testimonials}>
         <p>"Spendy has changed the way I manage my money!"</p>
