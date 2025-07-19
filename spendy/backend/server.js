@@ -32,9 +32,10 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Auth0 JWT middleware
 const jwtCheck = auth({
-  audience: 'https://spendy-api', // Must match frontend & Auth0 API
-  issuerBaseURL: 'https://dev-rcl8pcpcwm5cxd17.us.auth0.com/', // Your Auth0 domain
+  audience: ['https://spendy-api', 'https://dev-rcl8pcpcwm5cxd17.us.auth0.com/userinfo'],
+  issuerBaseURL: 'https://dev-rcl8pcpcwm5cxd17.us.auth0.com/',
 });
+
 
 // Import routers
 const expensesRouter = require('./routes/expenses');
