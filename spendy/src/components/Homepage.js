@@ -1,7 +1,14 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from '../styles/Homepage.module.css';
 
 function Homepage() {
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    navigate('/signup');  // Navigate to signup page
+  };
+
   return (
     <div className={styles.container}>
       <img src="/Spendylogo.jpg" alt="Spendy Logo" className={styles.logo} />
@@ -12,14 +19,14 @@ function Homepage() {
 
       <div className={styles.features}>
         <h2>Why Choose Spendy?</h2>
-          <ul>
-            <li>Track your expenses effortlessly.</li>
-            <li>Set and achieve your financial goals.</li>
-            <li>Stay on top of your budget anywhere, anytime.</li>
-          </ul>
+        <ul>
+          <li>Track your expenses effortlessly.</li>
+          <li>Set and achieve your financial goals.</li>
+          <li>Stay on top of your budget anywhere, anytime.</li>
+        </ul>
       </div>
 
-      <button className={styles.button} onClick={() => alert('Let’s get started!')}>
+      <button className={styles.getStartedButton} onClick={handleGetStarted}>
         Get Started
       </button>
 
@@ -27,7 +34,6 @@ function Homepage() {
         <p>"Spendy has changed the way I manage my money!"</p>
         <p>- Happy Customer</p>
       </div>
-
     </div>
   );
 }
