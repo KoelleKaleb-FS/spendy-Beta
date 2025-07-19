@@ -5,9 +5,10 @@ const Budget = require('../models/Budget');
 
 // GET: Fetch all expenses for logged-in user
 router.get('/', async (req, res) => {
-console.log('Received token auth info:', req.auth);
+  console.log('Received token user info:', req.user);
+
   try {
-    const userId = req.auth.sub;
+    const userId = req.user.sub;
     const expenses = await Expense.find({ userId });
     res.json(expenses);
   } catch (err) {
@@ -18,9 +19,10 @@ console.log('Received token auth info:', req.auth);
 
 // POST: Add a new expense and update budget
 router.post('/', async (req, res) => {
-  console.log('Auth info:', req.auth); 
+  console.log('User info:', req.user);
+
   try {
-    const userId = req.auth?.sub;
+    const userId = req.user.sub;
     const { description, amount, category, date } = req.body;
 
     const expense = new Expense({
@@ -45,9 +47,10 @@ router.post('/', async (req, res) => {
 
 // PUT: Update an existing expense and update budget
 router.put('/:id', async (req, res) => {
-  console.log('Auth info:', req.auth); 
+  console.log('User info:', req.user);
+
   try {
-    const userId = req.auth.sub;
+    const userId = req.user.sub;
     const expenseId = req.params.id;
     const { description, amount, category, date } = req.body;
 
@@ -75,9 +78,10 @@ router.put('/:id', async (req, res) => {
 
 // DELETE: Remove an expense and update budget
 router.delete('/:id', async (req, res) => {
-  console.log('Auth info:', req.auth); 
+  console.log('User info:', req.user);
+
   try {
-    const userId = req.auth.sub;
+    const userId = req.user.sub;
     const expenseId = req.params.id;
 
     const expense = await Expense.findOneAndDelete({ _id: expenseId, userId });
@@ -107,12 +111,11 @@ async function recalculateBudget(userId) {
   let budget = await Budget.findOne({ userId });
 
   if (!budget) {
-    // If no budget exists, create one with default totalBudget = 0
     budget = new Budget({
       userId,
       totalBudget: 0,
       expenses: totalExpenses,
-      remaining: -totalExpenses, // Negative balance until user sets a budget
+      remaining: -totalExpenses,
     });
   } else {
     budget.expenses = totalExpenses;
