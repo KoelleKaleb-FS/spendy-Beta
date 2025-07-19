@@ -5,9 +5,13 @@ const Expense = require('../models/Expense');
 
 // Get budget for logged-in user
 router.get('/', async (req, res) => {
-    console.log('GET /api/budget hit, user:', req.auth?.sub);
+  console.log('GET /api/budget hit, user:', req.user?.sub);
+
   try {
-    const userId = req.auth.sub;
+    const userId = req.user.sub;
+
+    if (!userId) return res.status(401).json({ message: 'Unauthorized: No user ID found in token' });
+
     const budget = await Budget.findOne({ userId });
 
     if (!budget) {
@@ -20,14 +24,14 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Create or update budget and recalculate expenses
 router.post('/', async (req, res) => {
-    console.log('POST /api/budget hit, user:', req.auth?.sub);
+  console.log('POST /api/budget hit, user:', req.user?.sub);
+
   try {
-     const userId = req.auth?.sub;
-    if (!userId) {
-      return res.status(401).json({ message: 'Unauthorized: No user ID found in token' });
-    }
+    const userId = req.user.sub;
+
+    if (!userId) return res.status(401).json({ message: 'Unauthorized: No user ID found in token' });
+
     const totalBudget = req.body.amount || req.body.totalBudget;
 
     let budget = await Budget.findOne({ userId });
@@ -48,7 +52,6 @@ router.post('/', async (req, res) => {
     ]);
     const totalExpenses = expensesTotalAgg[0]?.total || 0;
 
-    // Add extra fields to budget (if your schema allows)
     budget.expenses = totalExpenses;
     budget.remaining = totalBudget - totalExpenses;
 

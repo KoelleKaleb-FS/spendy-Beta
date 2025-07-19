@@ -2,7 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const { auth } = require('express-oauth2-jwt-bearer');
+const { expressjwt: jwt } = require('express-jwt');
+const jwksRsa = require('jwks-rsa');
 
 const app = express();
 
@@ -17,7 +18,6 @@ app.use(cors({
   credentials: true,
 }));
 
-
 app.use(express.json());
 
 // MongoDB connection
@@ -25,37 +25,35 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-  app.use('/api/budget', (req, res, next) => {
-  console.log('Authorization header:', req.headers.authorization);
-  next();
-});
+// Auth0 JWT middleware using express-jwt + jwks-rsa
+const jwtCheck = jwt({
+  // Dynamically provide a signing key based on the kid in the header and the signing keys provided by the JWKS endpoint.
+  secret: jwksRsa.expressJwtSecret({
+    cache: true,                  // cache the signing key
+    rateLimit: true,              // rate limit calls to JWKS endpoint
+    jwksRequestsPerMinute: 5,     // max 5 calls per minute
+    jwksUri: 'https://dev-rcl8pcpcwm5cxd17.us.auth0.com/.well-known/jwks.json'
+  }),
 
-
-// Auth0 JWT middleware
-const jwtCheck = auth({
   audience: 'https://spendy-api',
-  issuerBaseURL: 'https://dev-rcl8pcpcwm5cxd17.us.auth0.com/',
-  algorthim: ['RS256'],
+  issuer: 'https://dev-rcl8pcpcwm5cxd17.us.auth0.com/',
+  algorithms: ['RS256']
 });
-
 
 // Import routers
 const expensesRouter = require('./routes/expenses');
 const budgetRouter = require('./routes/budget');
 
-// Apply jwtCheck to API routes (real authentication)
+// Protect API routes with jwtCheck middleware
 app.use('/api/expenses', jwtCheck, expensesRouter);
-app.use('/api/budget', jwtCheck, (req, res, next) => {
-  console.log('User Auth Payload:', req.auth); 
-  next();
-}, budgetRouter);
+app.use('/api/budget', jwtCheck, budgetRouter);
 
 app.get('/api/test-auth', jwtCheck, (req, res) => {
-  console.log('✅ Test route hit. Decoded token:', req.auth);
+  console.log('✅ Test route hit. Decoded token:', req.user);
 
   res.json({
     message: 'Token is valid!',
-    authPayload: req.auth,
+    authPayload: req.user,
   });
 });
 
