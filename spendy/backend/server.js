@@ -36,7 +36,8 @@ const jwtCheck = jwt({
 
   audience: 'https://spendy-api',
   issuer: 'https://dev-rcl8pcpcwm5cxd17.us.auth0.com/',
-  algorithms: ['RS256']
+  algorithms: ['RS256'],
+  requestProperty: 'user'
 });
 
 app.use((err, req, res, next) => {
