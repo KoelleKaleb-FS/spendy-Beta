@@ -1,65 +1,89 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
-import { createBudget, getBudget } from './api';
 
 const BudgetManager = () => {
-  const { getAccessTokenSilently } = useAuth0();
+  const { getAccessTokenSilently, user } = useAuth0();
   const [budget, setBudget] = useState(null);
-  const [newBudget, setNewBudget] = useState('');
-  const [error, setError] = useState('');
+  const [amount, setAmount] = useState('');
 
   useEffect(() => {
     const fetchBudget = async () => {
       try {
-        const token = await getAccessTokenSilently({
-          audience: 'https://spendy-api',
-          scope: 'read:budget write:budget'
+        const token = await getAccessTokenSilently();
+        console.log('Budget token:', token); // Debug token here
+
+        const res = await fetch('https://spendy-beta.onrender.com/api/budget', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
-        const data = await getBudget(token);
+
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.message || 'Failed to fetch budget');
+        }
+
+        const data = await res.json();
         setBudget(data);
       } catch (err) {
-        setError(err.message);
+        console.error('Fetch budget error:', err.message);
       }
     };
 
     fetchBudget();
   }, [getAccessTokenSilently]);
 
-  const handleCreateBudget = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const token = await getAccessTokenSilently({
-        audience: 'https://spendy-api',
-        scope: 'read:budget write:budget'
+      const token = await getAccessTokenSilently();
+      console.log('POST Budget token:', token); // Debug token here
+
+      const res = await fetch('https://spendy-beta.onrender.com/api/budget', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ amount: Number(amount) }),
       });
-      const data = await createBudget(Number(newBudget), token);
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to set budget');
+      }
+
+      const data = await res.json();
       setBudget(data);
-      setNewBudget('');
-      setError('');
     } catch (err) {
-      setError(err.message);
+      console.error('Set budget error:', err.message);
     }
   };
 
   return (
     <div>
-      <h1>Budget Manager</h1>
-      {error && <p style={{color: 'red'}}>{error}</p>}
+      <h2>Budget Manager</h2>
       {budget ? (
         <div>
-          <p>Total Budget: ${budget.totalBudget}</p>
-          <p>Expenses: ${budget.expenses || 0}</p>
-          <p>Remaining: ${budget.remaining}</p>
+          <p><strong>Total Budget:</strong> ${budget.totalBudget}</p>
+          <p><strong>Total Expenses:</strong> ${budget.expenses}</p>
+          <p><strong>Remaining:</strong> ${budget.remaining}</p>
         </div>
       ) : (
-        <p>No budget found. Create one below:</p>
+        <p>No budget found.</p>
       )}
-      <input
-        type="number"
-        placeholder="Enter total budget"
-        value={newBudget}
-        onChange={(e) => setNewBudget(e.target.value)}
-      />
-      <button onClick={handleCreateBudget}>Create Budget</button>
+
+      <form onSubmit={handleSubmit}>
+        <input
+          type="number"
+          placeholder="Set Budget Amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          required
+        />
+        <button type="submit">Save Budget</button>
+      </form>
     </div>
   );
 };
