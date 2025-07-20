@@ -10,13 +10,13 @@
 .title {
   font-size: 2.5rem;
   margin-bottom: 20px;
-  color: #1f2937; /* Slightly darker for better visibility */
+  color: #1f2937;
 }
 
 .welcome {
   font-size: 1.2rem;
   margin-bottom: 20px;
-  color: #4b5563; /* Softer text for secondary information */
+  color: #4b5563;
 }
 
 .budgetContainer {
@@ -26,7 +26,7 @@
   border-radius: 10px;
   background-color: #ffffff;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  overflow-x: auto; /* Allows horizontal scrolling for wide content */
+  overflow-x: auto;
 }
 
 .expenseList {
@@ -74,7 +74,7 @@
 }
 
 .edit-button {
-  background-color: #10b981; /* Green for edit */
+  background-color: #10b981;
 }
 
 .edit-button:hover {
@@ -82,7 +82,7 @@
 }
 
 .delete-button {
-  background-color: #ef4444; /* Red for delete */
+  background-color: #ef4444;
 }
 
 .delete-button:hover {
@@ -93,4 +93,31 @@
   color: red;
   font-size: 1rem;
   margin-bottom: 20px;
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  .budgetContainer {
+    padding: 15px;
+    box-shadow: none;
+  }
+
+  .table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .welcome {
+    font-size: 1rem;
+  }
 }

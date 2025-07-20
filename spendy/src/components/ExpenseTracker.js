@@ -211,8 +211,9 @@ function ExpenseTracker({ budgetData, refreshBudget }) {
       throw new Error('Failed to delete expense');
     }
 
-    // Safely remove the expense
-    setExpenses((prev) => prev.filter((exp) => exp._id.toString() !== id.toString()));
+    // Safely remove the expense by ensuring both sides are strings
+    setExpenses((prev) => prev.filter((exp) => String(exp._id) !== String(id)));
+    setEditingExpense(null);
     setError('');
 
     if (refreshBudget) await refreshBudget();
@@ -222,26 +223,39 @@ function ExpenseTracker({ budgetData, refreshBudget }) {
 }
 
   function handleExportCSV() {
-    const csvRows = [
-      ['Description', 'Amount', 'Category', 'Date'],
-      ...filteredExpenses.map((e) => [
-        e.description,
-        e.amount,
-        e.category,
-        new Date(e.date).toLocaleDateString(),
-      ]),
-    ];
-
-    const csvContent = csvRows.map((row) => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'expenses.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+  if (filteredExpenses.length === 0) {
+    setError('No expenses to export.');
+    return;
   }
+
+  const csvHeader = ['Description', 'Amount', 'Category', 'Date'];
+
+  const csvRows = filteredExpenses.map((e) => [
+    e.description,
+    e.amount,
+    e.category,
+    new Date(e.date).toLocaleDateString(),
+  ]);
+
+  // Add BOM for Excel compatibility
+  const bom = '\ufeff';
+
+  const csvContent =
+    bom +
+    [csvHeader, ...csvRows]
+      .map((row) => row.map((item) => `"${String(item).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'expenses.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 
   const data = getExpensesByCategory(filteredExpenses);
 
