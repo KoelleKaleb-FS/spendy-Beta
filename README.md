@@ -1,54 +1,87 @@
-# Welcome! ...🚀
 
-Weekly Update Log
-Week 1:
-⚙️ Overview - What I Worked On This Week
-Reviewed and finalized the application's feature list and functionality based on user personas and use cases.
+# Spendy – Personal Finance Manager  
+**Final Handoff Packet – Full Sail Capstone Project**  
+Developed by: Kaleb Koelle
 
-Conducted research on potential 3rd party APIs and confirmed one for integration.
+## Overview
 
-Set up the project repository with proper branching structure and initialized the development environment.
+**Spendy** is a React-based personal finance management application designed to help users track expenses, visualize spending habits, and manage budgets in a simple, user-friendly way.
 
-Created and assigned GitHub issues for this week’s tasks.
+This repository contains **all project files, assets, documentation, and maintenance guidelines** needed to install, run, and maintain the application.  
 
-🌵 Challenges - What Problems Did I Have & How I’m Addressing Them
-Challenge: Finalizing the API for integration took longer than expected due to unclear documentation.
+---
 
-Solution: Took a deep dive into the API’s documentation, tested endpoints using Postman, and confirmed functionality.
+## Installation Instructions
 
-Challenge: Structuring GitHub milestones and assigning issues felt overwhelming.
+Follow these steps to install and run Spendy locally or on your server.
 
-Solution: Simplified issues into smaller, actionable tasks and used labels for better organization.
+### **1. Clone the Repository**
 
-🏆 Accomplishments - What I "Leveled Up" On This Week
-Successfully set up the development environment and project repository, making the project ready for coding.
+```bash
+git clone git@github.com:KoelleKaleb-FS/spendy-Beta.git
+cd spendy-Beta
+```
 
-Improved understanding of Agile principles by effectively breaking down tasks into manageable GitHub issues.
+### **2. Install Dependencies**
+```bash
+npm install
+```
 
-Tested and confirmed API compatibility with project requirements.
+### **3. Configure Environment Variables**
+REACT_APP_AUTH0_DOMAIN=your-auth0-domain
+REACT_APP_AUTH0_CLIENT_ID=your-auth0-client-id
+REACT_APP_BACKEND_URL=http://localhost:5000
 
-🔮 Next Steps - What I Plan to Prioritize and Do Next
-Begin coding the application’s core functionality, starting with user authentication and API integration.
+### **4. Run the Application**
+```bash
+npm run dev
+```
 
-Implement basic UI components and ensure responsiveness across devices.
+### **5. Backend Setup**
+```bash
+npm install
+npm run dev
+```
 
-Test the development environment to confirm all dependencies are working correctly.
+## Maintenance Plan
+Weekly Tasks
+Review frontend and backend logs for errors.
 
-Document progress and any challenges faced to keep stakeholders updated.
+Run npm audit to check for vulnerabilities.
 
-Additional Notes
-Ensure that this section is updated weekly with progress logs, including new challenges, accomplishments, and next steps.
+Update content (homepage banners, budget categories, etc.) as needed.
 
-Use clear and concise language to maintain readability for contributors and stakeholders.
+## Monthly Tasks
+Backup the database and user data securely.
 
-<br>
+Test for any deprecated packages or API changes.
 
-# Project & Portfolio
+Monitor Auth0 or other third-party services for updates.
 
-### Kaleb Koelle
+## Quarterly Tasks
+Perform UI/UX audits for usability improvements.
 
-![Degree Program](https://img.shields.io/badge/degree-web%20development-blue.svg)
+Evaluate site performance (load times, responsiveness).
 
-[Log](./docs/log.md)
+Review and optimize codebase if needed.
 
-<br>
+Documentation Included
+Project Plan (docs/project-plan.pdf)
+
+Change Orders (docs/change-orders.pdf)
+
+Installation Instructions (this README)
+
+Maintenance Plan (docs/maintenance-plan.pdf)
+
+Raw Assets and Files (assets/)
+
+## Contact Information
+Kaleb Koelle
+Tilton, NH 03276
+Email: kkoelle99@gmail.com
+GitHub: KoelleKaleb-FS
+LinkedIn: linkedin.com/in/kaleb-koelle-86719a1ba
+
+### License
+This project is for educational purposes as part of the Full Sail University Capstone. Not for commercial use without permission.
