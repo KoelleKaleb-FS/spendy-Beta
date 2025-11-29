@@ -1,5 +1,5 @@
-const assert = require('assert');
-const { calculateForecast } = require('./forecast');
+const assert = require("assert");
+const { calculateForecast } = require("./forecast");
 
 function nearlyEqual(a, b, eps = 0.01) {
   return Math.abs(a - b) < eps;
@@ -13,7 +13,7 @@ function testBasicForecast() {
   assert.ok(nearlyEqual(res.averageDailySpend, 10));
   assert.ok(nearlyEqual(res.projectedSpend, 300));
   assert.strictEqual(res.willOverspend, false);
-  console.log('testBasicForecast passed');
+  console.log("testBasicForecast passed");
 }
 
 function testZeroDaysIntoMonth() {
@@ -21,7 +21,7 @@ function testZeroDaysIntoMonth() {
   const res = calculateForecast(0, 500, 0);
   // function returns budgetGoal (number) in that branch
   assert.strictEqual(res, 500);
-  console.log('testZeroDaysIntoMonth passed');
+  console.log("testZeroDaysIntoMonth passed");
 }
 
 function testOverspend() {
@@ -31,15 +31,15 @@ function testOverspend() {
   assert.ok(nearlyEqual(res.projectedSpend, 1800));
   assert.strictEqual(res.willOverspend, true);
   assert.ok(nearlyEqual(res.overspendAmount, 800));
-  console.log('testOverspend passed');
+  console.log("testOverspend passed");
 }
 
 function runTests() {
-  console.log('Running forecast utility tests...');
+  console.log("Running forecast utility tests...");
   testBasicForecast();
   testZeroDaysIntoMonth();
   testOverspend();
-  console.log('All forecast tests passed.');
+  console.log("All forecast tests passed.");
 }
 
 runTests();

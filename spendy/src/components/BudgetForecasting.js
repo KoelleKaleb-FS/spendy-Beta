@@ -1,6 +1,17 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from "recharts";
 import styles from "../styles/BudgetForecasting.module.css";
 
 function BudgetForecasting() {
@@ -35,12 +46,15 @@ function BudgetForecasting() {
       setForecast(forecastData);
 
       // Fetch category forecasts
-      const categoryRes = await fetch(`${API_URL}/api/budget/forecast/by-category`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const categoryRes = await fetch(
+        `${API_URL}/api/budget/forecast/by-category`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (categoryRes.ok) {
         const categoryData = await categoryRes.json();
@@ -77,7 +91,12 @@ function BudgetForecasting() {
   // Prepare data for trend chart
   const trendData = forecast
     ? [
-        { day: "Today", current: forecast.currentSpend, projected: forecast.currentSpend, budget: forecast.budget },
+        {
+          day: "Today",
+          current: forecast.currentSpend,
+          projected: forecast.currentSpend,
+          budget: forecast.budget,
+        },
         {
           day: "End of Month",
           current: forecast.currentSpend,
@@ -88,12 +107,14 @@ function BudgetForecasting() {
     : [];
 
   // Prepare data for category comparison
-  const categoryData = Object.entries(categoryForecasts || {}).map(([category, data]) => ({
-    category,
-    current: data.currentSpend,
-    projected: data.projectedSpend,
-    budget: data.budget,
-  }));
+  const categoryData = Object.entries(categoryForecasts || {}).map(
+    ([category, data]) => ({
+      category,
+      current: data.currentSpend,
+      projected: data.projectedSpend,
+      budget: data.budget,
+    })
+  );
 
   return (
     <div className={styles.container}>
@@ -103,19 +124,39 @@ function BudgetForecasting() {
         <>
           {/* Overall Forecast Summary */}
           <div className={styles.summaryGrid}>
-            <div className={`${styles.summaryCard} ${forecast.willOverspend ? styles.warning : styles.success}`}>
+            <div
+              className={`${styles.summaryCard} ${
+                forecast.willOverspend ? styles.warning : styles.success
+              }`}
+            >
               <h3>Current Spending</h3>
-              <p className={styles.amount}>${forecast.currentSpend.toFixed(2)}</p>
-              <p className={styles.label}>of ${forecast.budget.toFixed(2)} budget</p>
+              <p className={styles.amount}>
+                ${forecast.currentSpend.toFixed(2)}
+              </p>
+              <p className={styles.label}>
+                of ${forecast.budget.toFixed(2)} budget
+              </p>
             </div>
 
-            <div className={`${styles.summaryCard} ${forecast.willOverspend ? styles.danger : styles.success}`}>
+            <div
+              className={`${styles.summaryCard} ${
+                forecast.willOverspend ? styles.danger : styles.success
+              }`}
+            >
               <h3>Projected End of Month</h3>
-              <p className={styles.amount}>${forecast.projectedSpend.toFixed(2)}</p>
-              <p className={styles.label}>{forecast.percentOfBudget}% of budget</p>
+              <p className={styles.amount}>
+                ${forecast.projectedSpend.toFixed(2)}
+              </p>
+              <p className={styles.label}>
+                {forecast.percentOfBudget}% of budget
+              </p>
             </div>
 
-            <div className={`${styles.summaryCard} ${forecast.willOverspend ? styles.danger : styles.success}`}>
+            <div
+              className={`${styles.summaryCard} ${
+                forecast.willOverspend ? styles.danger : styles.success
+              }`}
+            >
               <h3>Status</h3>
               <p className={styles.status}>
                 {forecast.willOverspend ? (
@@ -128,7 +169,10 @@ function BudgetForecasting() {
                   <>
                     ✅ On Track
                     <br />
-                    <small>${(forecast.budget - forecast.projectedSpend).toFixed(2)} remaining</small>
+                    <small>
+                      ${(forecast.budget - forecast.projectedSpend).toFixed(2)}{" "}
+                      remaining
+                    </small>
                   </>
                 )}
               </p>
@@ -136,7 +180,9 @@ function BudgetForecasting() {
 
             <div className={styles.summaryCard}>
               <h3>Daily Average</h3>
-              <p className={styles.amount}>${forecast.averageDailySpend.toFixed(2)}</p>
+              <p className={styles.amount}>
+                ${forecast.averageDailySpend.toFixed(2)}
+              </p>
               <p className={styles.label}>per day</p>
             </div>
           </div>
@@ -151,9 +197,27 @@ function BudgetForecasting() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="budget" stroke="#667eea" strokeWidth={2} name="Budget" />
-                <Line type="monotone" dataKey="current" stroke="#48bb78" strokeWidth={2} name="Current" />
-                <Line type="monotone" dataKey="projected" stroke="#f56565" strokeWidth={2} name="Projected" />
+                <Line
+                  type="monotone"
+                  dataKey="budget"
+                  stroke="#667eea"
+                  strokeWidth={2}
+                  name="Budget"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="current"
+                  stroke="#48bb78"
+                  strokeWidth={2}
+                  name="Current"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="projected"
+                  stroke="#f56565"
+                  strokeWidth={2}
+                  name="Projected"
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -176,25 +240,35 @@ function BudgetForecasting() {
 
               {/* Category Details */}
               <div className={styles.categoryDetails}>
-                {Object.entries(categoryForecasts || {}).map(([category, data]) => (
-                  <div key={category} className={`${styles.categoryCard} ${data.willOverspend ? styles.categoryWarning : ""}`}>
-                    <h4>{category}</h4>
-                    <p>
-                      <strong>Current:</strong> ${data.currentSpend.toFixed(2)}
-                    </p>
-                    <p>
-                      <strong>Projected:</strong> ${data.projectedSpend.toFixed(2)}
-                    </p>
-                    <p>
-                      <strong>Budget:</strong> ${data.budget.toFixed(2)}
-                    </p>
-                    {data.willOverspend && (
-                      <p className={styles.warning}>
-                        ⚠️ Will overspend by ${data.overspendAmount.toFixed(2)}
+                {Object.entries(categoryForecasts || {}).map(
+                  ([category, data]) => (
+                    <div
+                      key={category}
+                      className={`${styles.categoryCard} ${
+                        data.willOverspend ? styles.categoryWarning : ""
+                      }`}
+                    >
+                      <h4>{category}</h4>
+                      <p>
+                        <strong>Current:</strong> $
+                        {data.currentSpend.toFixed(2)}
                       </p>
-                    )}
-                  </div>
-                ))}
+                      <p>
+                        <strong>Projected:</strong> $
+                        {data.projectedSpend.toFixed(2)}
+                      </p>
+                      <p>
+                        <strong>Budget:</strong> ${data.budget.toFixed(2)}
+                      </p>
+                      {data.willOverspend && (
+                        <p className={styles.warning}>
+                          ⚠️ Will overspend by $
+                          {data.overspendAmount.toFixed(2)}
+                        </p>
+                      )}
+                    </div>
+                  )
+                )}
               </div>
             </div>
           )}

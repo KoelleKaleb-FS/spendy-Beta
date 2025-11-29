@@ -5,13 +5,15 @@ const Expense = require("../models/Expense");
 const { calculateForecast, getDaysIntoMonth } = require("../utils/forecast");
 
 // GET /api/budget - Fetch budget for logged-in user
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   // GET /api/budget hit
 
   try {
     if (!req.user || !req.user.sub) {
-      console.error('❌ No user info in token');
-      return res.status(401).json({ message: 'Unauthorized: No user ID found in token' });
+      console.error("❌ No user info in token");
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No user ID found in token" });
     }
 
     const userId = req.user.sub;
@@ -19,31 +21,33 @@ router.get('/', async (req, res) => {
     const budget = await Budget.findOne({ userId });
 
     if (!budget) {
-      return res.status(404).json({ message: 'No budget found.' });
+      return res.status(404).json({ message: "No budget found." });
     }
 
     res.json(budget);
   } catch (err) {
-    console.error('Error fetching budget:', err);
-    res.status(500).json({ message: 'Server error fetching budget' });
+    console.error("Error fetching budget:", err);
+    res.status(500).json({ message: "Server error fetching budget" });
   }
 });
 
 // POST /api/budget - Create or update budget
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   // POST /api/budget hit
 
   try {
     if (!req.user || !req.user.sub) {
-      console.error('❌ No user info in token');
-      return res.status(401).json({ message: 'Unauthorized: No user ID found in token' });
+      console.error("❌ No user info in token");
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No user ID found in token" });
     }
 
     const userId = req.user.sub;
 
     const amount = req.body.amount;
-    if (typeof amount !== 'number' || isNaN(amount)) {
-      return res.status(400).json({ message: 'Invalid budget amount' });
+    if (typeof amount !== "number" || isNaN(amount)) {
+      return res.status(400).json({ message: "Invalid budget amount" });
     }
 
     let budget = await Budget.findOne({ userId });
@@ -60,7 +64,7 @@ router.post('/', async (req, res) => {
     // Recalculate expenses total
     const expensesTotalAgg = await Expense.aggregate([
       { $match: { userId } },
-      { $group: { _id: null, total: { $sum: "$amount" } } }
+      { $group: { _id: null, total: { $sum: "$amount" } } },
     ]);
     const totalExpenses = expensesTotalAgg[0]?.total || 0;
 
@@ -71,8 +75,8 @@ router.post('/', async (req, res) => {
 
     res.json(budget);
   } catch (err) {
-    console.error('Error saving budget:', err);
-    res.status(500).json({ message: 'Server error saving budget' });
+    console.error("Error saving budget:", err);
+    res.status(500).json({ message: "Server error saving budget" });
   }
 });
 
@@ -82,7 +86,9 @@ router.post('/', async (req, res) => {
 router.get("/forecast", async (req, res) => {
   try {
     if (!req.user || !req.user.sub) {
-      return res.status(401).json({ message: "Unauthorized: No user info in token" });
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No user info in token" });
     }
 
     const userId = req.user.sub;
@@ -102,10 +108,17 @@ router.get("/forecast", async (req, res) => {
       date: { $gte: startOfMonth, $lte: endOfMonth },
     });
 
-    const totalMonthExpenses = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const totalMonthExpenses = monthExpenses.reduce(
+      (sum, exp) => sum + exp.amount,
+      0
+    );
     const daysIntoMonth = getDaysIntoMonth();
 
-    const forecast = calculateForecast(totalMonthExpenses, budget.totalBudget, daysIntoMonth);
+    const forecast = calculateForecast(
+      totalMonthExpenses,
+      budget.totalBudget,
+      daysIntoMonth
+    );
 
     res.json(forecast);
   } catch (err) {
@@ -120,7 +133,9 @@ router.get("/forecast", async (req, res) => {
 router.get("/forecast/by-category", async (req, res) => {
   try {
     if (!req.user || !req.user.sub) {
-      return res.status(401).json({ message: "Unauthorized: No user info in token" });
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No user info in token" });
     }
 
     const userId = req.user.sub;
@@ -156,13 +171,19 @@ router.get("/forecast/by-category", async (req, res) => {
     monthExpenses.forEach((exp) => {
       const category = exp._id;
       const categoryGoal = budget.categoryGoals?.[category] || 0;
-      categoryForecasts[category] = calculateForecast(exp.total, categoryGoal, daysIntoMonth);
+      categoryForecasts[category] = calculateForecast(
+        exp.total,
+        categoryGoal,
+        daysIntoMonth
+      );
     });
 
     res.json(categoryForecasts);
   } catch (err) {
     console.error("Error calculating category forecasts:", err);
-    res.status(500).json({ message: "Server error calculating category forecasts" });
+    res
+      .status(500)
+      .json({ message: "Server error calculating category forecasts" });
   }
 });
 
