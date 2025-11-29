@@ -17,10 +17,16 @@ function testBasicForecast() {
 }
 
 function testZeroDaysIntoMonth() {
-  // As implemented, when daysIntoMonth === 0, calculateForecast returns budgetGoal
   const res = calculateForecast(0, 500, 0);
-  // function returns budgetGoal (number) in that branch
-  assert.strictEqual(res, 500);
+  // Now returns an object
+  assert.strictEqual(res.currentSpend, 0);
+  assert.strictEqual(res.projectedSpend, 500);
+  assert.strictEqual(res.budget, 500);
+  assert.strictEqual(res.daysIntoMonth, 0);
+  assert.strictEqual(res.averageDailySpend, 0);
+  assert.strictEqual(res.willOverspend, false);
+  assert.strictEqual(res.overspendAmount, 0);
+  assert.strictEqual(res.percentOfBudget, 0);
   console.log("testZeroDaysIntoMonth passed");
 }
 

@@ -6,8 +6,6 @@ const { calculateForecast, getDaysIntoMonth } = require("../utils/forecast");
 
 // GET /api/budget - Fetch budget for logged-in user
 router.get("/", async (req, res) => {
-  // GET /api/budget hit
-
   try {
     if (!req.user || !req.user.sub) {
       console.error("❌ No user info in token");
@@ -17,7 +15,6 @@ router.get("/", async (req, res) => {
     }
 
     const userId = req.user.sub;
-
     const budget = await Budget.findOne({ userId });
 
     if (!budget) {
@@ -33,8 +30,6 @@ router.get("/", async (req, res) => {
 
 // POST /api/budget - Create or update budget
 router.post("/", async (req, res) => {
-  // POST /api/budget hit
-
   try {
     if (!req.user || !req.user.sub) {
       console.error("❌ No user info in token");
@@ -44,7 +39,6 @@ router.post("/", async (req, res) => {
     }
 
     const userId = req.user.sub;
-
     const amount = req.body.amount;
     if (typeof amount !== "number" || isNaN(amount)) {
       return res.status(400).json({ message: "Invalid budget amount" });
@@ -80,9 +74,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-// =============================
 // GET /api/budget/forecast - Get budget forecast for current month
-// =============================
 router.get("/forecast", async (req, res) => {
   try {
     if (!req.user || !req.user.sub) {
@@ -127,9 +119,7 @@ router.get("/forecast", async (req, res) => {
   }
 });
 
-// =============================
 // GET /api/budget/forecast/by-category - Get forecast by category
-// =============================
 router.get("/forecast/by-category", async (req, res) => {
   try {
     if (!req.user || !req.user.sub) {

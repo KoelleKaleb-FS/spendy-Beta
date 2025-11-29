@@ -1,6 +1,18 @@
 // Helper function to calculate forecast
 function calculateForecast(expenses, budgetGoal, daysIntoMonth) {
-  if (daysIntoMonth === 0) return budgetGoal;
+  if (daysIntoMonth === 0) {
+    // Always return an object, even when no days have passed
+    return {
+      currentSpend: 0,
+      projectedSpend: budgetGoal,
+      budget: budgetGoal,
+      daysIntoMonth: 0,
+      averageDailySpend: 0,
+      willOverspend: false,
+      overspendAmount: 0,
+      percentOfBudget: 0,
+    };
+  }
 
   const averageDailySpend = expenses / daysIntoMonth;
   const daysRemainingInMonth = 30 - daysIntoMonth; // Approximate
