@@ -67,7 +67,7 @@ function ExpenseTracker({ budgetData, refreshBudget }) {
           scope: 'read:expenses write:budget',
         });
 
-        const expensesResponse = await fetch(`${process.env.REACT_APP_API_URL}/expenses`, {
+        const expensesResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/expenses`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
