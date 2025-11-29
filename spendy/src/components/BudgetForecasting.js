@@ -21,6 +21,7 @@ function BudgetForecasting() {
   const [upcomingExpenses, setUpcomingExpenses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showUpcoming, setShowUpcoming] = useState(true);
 
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -33,51 +34,32 @@ function BudgetForecasting() {
         audience: "https://spendy-api",
       });
 
-      // Fetch overall forecast
+      // Overall forecast
       const forecastRes = await fetch(`${API_URL}/api/budget/forecast`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (!forecastRes.ok) throw new Error("Failed to fetch forecast");
-      const forecastData = await forecastRes.json();
-      setForecast(forecastData);
+      setForecast(await forecastRes.json());
 
-      // Fetch category forecasts
+      // Category forecasts
       const categoryRes = await fetch(
         `${API_URL}/api/budget/forecast/by-category`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       if (categoryRes.ok) {
         const categoryData = await categoryRes.json();
         const formattedData = {};
         Object.entries(categoryData).forEach(([category, data]) => {
-          formattedData[category] = {
-            ...data,
-            recurring: data.recurringAmount || 0,
-            variable: data.currentSpend - (data.recurringAmount || 0),
-          };
+          formattedData[category] = { ...data };
         });
         setCategoryForecasts(formattedData);
       }
 
-      // Fetch upcoming recurring expenses (next 7 days)
+      // Upcoming recurring expenses
       const upcomingRes = await fetch(`${API_URL}/api/recurring/upcoming/7`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-      if (upcomingRes.ok) {
-        const upcomingData = await upcomingRes.json();
-        setUpcomingExpenses(upcomingData);
-      }
+      if (upcomingRes.ok) setUpcomingExpenses(await upcomingRes.json());
 
       setError("");
     } catch (err) {
@@ -89,7 +71,7 @@ function BudgetForecasting() {
 
   useEffect(() => {
     fetchForecasts();
-    const interval = setInterval(fetchForecasts, 60000); // refresh every minute
+    const interval = setInterval(fetchForecasts, 60000);
     return () => clearInterval(interval);
   }, [fetchForecasts]);
 
@@ -97,7 +79,6 @@ function BudgetForecasting() {
   if (loading) return <p>Loading forecasts...</p>;
   if (error) return <p className={styles.error}>{error}</p>;
 
-  // Generate daily trend for the month
   const generateDailyTrend = () => {
     if (!forecast) return [];
     const today = new Date();
@@ -110,12 +91,11 @@ function BudgetForecasting() {
     const avgDailySpend = forecast.averageDailySpend || 0;
 
     const dailyTrend = [];
-
     for (let day = 1; day <= daysInMonth; day++) {
       const projectedSpend =
         day <= daysElapsed
-          ? forecast.currentSpend // past/current days
-          : forecast.currentSpend + avgDailySpend * (day - daysElapsed); // future days
+          ? forecast.currentSpend
+          : forecast.currentSpend + avgDailySpend * (day - daysElapsed);
 
       dailyTrend.push({
         day: day.toString(),
@@ -125,12 +105,10 @@ function BudgetForecasting() {
         overspend: projectedSpend > forecast.budget,
       });
     }
-
     return dailyTrend;
   };
 
   const trendData = generateDailyTrend();
-
   const categoryData = Object.entries(categoryForecasts).map(
     ([category, data]) => ({
       category,
@@ -138,6 +116,8 @@ function BudgetForecasting() {
       recurring: data.recurring,
       projected: data.projectedSpend,
       budget: data.budget,
+      willOverspend: data.willOverspend,
+      overspendAmount: data.overspendAmount,
     })
   );
 
@@ -147,7 +127,7 @@ function BudgetForecasting() {
 
       {forecast && (
         <>
-          {/* Overall Forecast Summary */}
+          {/* Overall Summary */}
           <div className={styles.summaryGrid}>
             <div
               className={`${styles.summaryCard} ${
@@ -212,13 +192,9 @@ function BudgetForecasting() {
             </div>
           </div>
 
-          {/* Trend Chart */}
+          {/* Daily Trend Chart */}
           <div className={styles.chartContainer}>
             <h3>Spending Trend (Daily Projection)</h3>
-            <p className={styles.chartNote}>
-              <span style={{ color: "#f56565" }}>●</span> Red dots indicate days
-              where projected spending exceeds your budget
-            </p>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={trendData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -247,12 +223,10 @@ function BudgetForecasting() {
                   stroke="#e0a0ff"
                   strokeWidth={2}
                   name="Projected"
-                  dot={(props) => {
-                    const { cx, cy, payload } = props;
+                  dot={({ cx, cy, payload }) => {
                     if (!payload) return null;
-                    const isOverspend = payload.overspend;
-                    const fill = isOverspend ? "#f56565" : "#e0a0ff";
-                    const radius = isOverspend ? 5 : 3;
+                    const fill = payload.overspend ? "#f56565" : "#e0a0ff";
+                    const radius = payload.overspend ? 5 : 3;
                     return (
                       <circle
                         cx={cx}
@@ -269,7 +243,7 @@ function BudgetForecasting() {
             </ResponsiveContainer>
           </div>
 
-          {/* Category Forecast Chart */}
+          {/* Category Forecasts */}
           {categoryData.length > 0 && (
             <div className={styles.chartContainer}>
               <h3>Category Forecasts (Recurring vs Variable)</h3>
@@ -291,96 +265,124 @@ function BudgetForecasting() {
               </ResponsiveContainer>
 
               <div className={styles.categoryDetails}>
-                {Object.entries(categoryForecasts).map(([category, data]) => (
-                  <div
-                    key={category}
-                    className={`${styles.categoryCard} ${
-                      data.willOverspend ? styles.categoryWarning : ""
-                    }`}
-                  >
-                    <h4>{category}</h4>
-                    <p>
-                      <strong>Recurring:</strong> ${data.recurring.toFixed(2)}
-                    </p>
-                    <p>
-                      <strong>Variable:</strong> ${data.variable.toFixed(2)}
-                    </p>
-                    <p>
-                      <strong>Projected Total:</strong> $
-                      {data.projectedSpend.toFixed(2)}
-                    </p>
-                    <p>
-                      <strong>Budget:</strong> ${data.budget.toFixed(2)}
-                    </p>
-                    {data.willOverspend && (
-                      <p className={styles.warning}>
-                        ⚠️ Will overspend by ${data.overspendAmount.toFixed(2)}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Upcoming Recurring Expenses */}
-          {upcomingExpenses.length > 0 && (
-            <div className={styles.chartContainer}>
-              <h3>Upcoming Recurring Expenses (Next 7 Days)</h3>
-              <div className={styles.upcomingList}>
-                {upcomingExpenses.map((expense, idx) => {
-                  const today = new Date();
-                  const nextDate = new Date(expense.nextDate);
-                  const daysUntil = Math.ceil(
-                    (nextDate - today) / (1000 * 60 * 60 * 24)
+                {categoryData.map((data) => {
+                  const percentUsed = Math.min(
+                    (data.projected / data.budget) * 100,
+                    100
                   );
-
-                  // Color code by urgency
-                  let urgencyClass = styles.upcomingNormal;
-                  if (daysUntil <= 1) urgencyClass = styles.upcomingHigh;
-                  else if (daysUntil <= 3) urgencyClass = styles.upcomingMedium;
-
-                  // Color code by category
-                  let categoryColor = "#667eea";
-                  switch (expense.category) {
-                    case "Food":
-                      categoryColor = "#48bb78";
-                      break;
-                    case "Utilities":
-                      categoryColor = "#f6ad55";
-                      break;
-                    case "Rent":
-                      categoryColor = "#f56565";
-                      break;
-                    case "Entertainment":
-                      categoryColor = "#9f7aea";
-                      break;
-                    case "Other":
-                      categoryColor = "#4fd1c5";
-                      break;
-                    default:
-                      break;
-                  }
+                  const progressColor =
+                    data.projected > data.budget ? "#f56565" : "#48bb78";
 
                   return (
                     <div
-                      key={idx}
-                      className={`${styles.upcomingCard} ${urgencyClass}`}
-                      style={{ borderLeft: `5px solid ${categoryColor}` }}
+                      key={data.category}
+                      className={`${styles.categoryCard} ${
+                        data.willOverspend ? styles.categoryWarning : ""
+                      }`}
                     >
+                      <h4>{data.category}</h4>
                       <p>
-                        <strong>{expense.description}</strong> ($
-                        {expense.amount.toFixed(2)})
+                        <strong>Recurring:</strong> ${data.recurring.toFixed(2)}
                       </p>
-                      <p>Category: {expense.category}</p>
                       <p>
-                        Next Date: {nextDate.toLocaleDateString()} ({daysUntil}{" "}
-                        days)
+                        <strong>Variable:</strong> ${data.variable.toFixed(2)}
                       </p>
+                      <p>
+                        <strong>Projected Total:</strong> $
+                        {data.projected.toFixed(2)}
+                      </p>
+                      <p>
+                        <strong>Budget:</strong> ${data.budget.toFixed(2)}
+                      </p>
+
+                      <div className={styles.progressBar}>
+                        <div
+                          className={styles.progress}
+                          style={{
+                            width: `${percentUsed}%`,
+                            background: progressColor,
+                          }}
+                        />
+                      </div>
+
+                      {data.willOverspend && (
+                        <p className={styles.warning}>
+                          ⚠️ Will overspend by $
+                          {data.overspendAmount.toFixed(2)}
+                        </p>
+                      )}
                     </div>
                   );
                 })}
               </div>
+            </div>
+          )}
+
+          {/* Upcoming Expenses Collapsible */}
+          {upcomingExpenses.length > 0 && (
+            <div className={styles.chartContainer}>
+              <h3
+                onClick={() => setShowUpcoming(!showUpcoming)}
+                style={{ cursor: "pointer" }}
+              >
+                Upcoming Recurring Expenses (Next 7 Days){" "}
+                {showUpcoming ? "▼" : "▲"}
+              </h3>
+              {showUpcoming && (
+                <div className={styles.upcomingList}>
+                  {upcomingExpenses.map((expense, idx) => {
+                    const today = new Date();
+                    const nextDate = new Date(expense.nextDate);
+                    const daysUntil = Math.ceil(
+                      (nextDate - today) / (1000 * 60 * 60 * 24)
+                    );
+
+                    let urgencyClass = styles.upcomingNormal;
+                    if (daysUntil <= 1) urgencyClass = styles.upcomingHigh;
+                    else if (daysUntil <= 3)
+                      urgencyClass = styles.upcomingMedium;
+
+                    let categoryColor = "#667eea";
+                    switch (expense.category) {
+                      case "Food":
+                        categoryColor = "#48bb78";
+                        break;
+                      case "Utilities":
+                        categoryColor = "#f6ad55";
+                        break;
+                      case "Rent":
+                        categoryColor = "#f56565";
+                        break;
+                      case "Entertainment":
+                        categoryColor = "#9f7aea";
+                        break;
+                      case "Other":
+                        categoryColor = "#4fd1c5";
+                        break;
+                      default:
+                        break;
+                    }
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`${styles.upcomingCard} ${urgencyClass}`}
+                        style={{ borderLeft: `5px solid ${categoryColor}` }}
+                      >
+                        <p>
+                          <strong>{expense.description}</strong> ($
+                          {expense.amount.toFixed(2)})
+                        </p>
+                        <p>Category: {expense.category}</p>
+                        <p>
+                          Next Date: {nextDate.toLocaleDateString()} (
+                          {daysUntil} days)
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </>

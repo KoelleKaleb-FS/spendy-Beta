@@ -6,7 +6,9 @@ const RecurringExpense = require("../models/RecurringExpense");
 router.get("/", async (req, res) => {
   try {
     if (!req.user || !req.user.sub) {
-      return res.status(401).json({ message: "Unauthorized: No user info in token" });
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No user info in token" });
     }
 
     const userId = req.user.sub;
@@ -22,13 +24,15 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     if (!req.user || !req.user.sub) {
-      return res.status(401).json({ message: "Unauthorized: No user info in token" });
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No user info in token" });
     }
 
     const userId = req.user.sub;
-    const { description, amount, category, frequency, startDate, endDate } = req.body;
+    const { description, amount, category, frequency, startDate, endDate } =
+      req.body;
 
-    // Validate required fields
     if (!description || !amount || !category || !frequency || !startDate) {
       return res.status(400).json({ message: "Missing required fields" });
     }
@@ -55,14 +59,27 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     if (!req.user || !req.user.sub) {
-      return res.status(401).json({ message: "Unauthorized: No user info in token" });
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No user info in token" });
     }
 
     const userId = req.user.sub;
     const { id } = req.params;
-    const { description, amount, category, frequency, startDate, endDate, isActive } = req.body;
+    const {
+      description,
+      amount,
+      category,
+      frequency,
+      startDate,
+      endDate,
+      isActive,
+    } = req.body;
 
-    const recurringExpense = await RecurringExpense.findOne({ _id: id, userId });
+    const recurringExpense = await RecurringExpense.findOne({
+      _id: id,
+      userId,
+    });
     if (!recurringExpense) {
       return res.status(404).json({ message: "Recurring expense not found" });
     }
@@ -88,13 +105,18 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     if (!req.user || !req.user.sub) {
-      return res.status(401).json({ message: "Unauthorized: No user info in token" });
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No user info in token" });
     }
 
     const userId = req.user.sub;
     const { id } = req.params;
 
-    const deleted = await RecurringExpense.findOneAndDelete({ _id: id, userId });
+    const deleted = await RecurringExpense.findOneAndDelete({
+      _id: id,
+      userId,
+    });
     if (!deleted) {
       return res.status(404).json({ message: "Recurring expense not found" });
     }
@@ -110,7 +132,9 @@ router.delete("/:id", async (req, res) => {
 router.get("/monthly-impact", async (req, res) => {
   try {
     if (!req.user || !req.user.sub) {
-      return res.status(401).json({ message: "Unauthorized: No user info in token" });
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No user info in token" });
     }
 
     const userId = req.user.sub;
@@ -119,21 +143,19 @@ router.get("/monthly-impact", async (req, res) => {
       isActive: true,
     });
 
-    // Calculate monthly amounts based on frequency
     let monthlyImpact = 0;
-    
     recurringExpenses.forEach((expense) => {
       let monthlyAmount = 0;
-      
+
       switch (expense.frequency) {
         case "daily":
-          monthlyAmount = expense.amount * 30; // Approximate
+          monthlyAmount = expense.amount * 30;
           break;
         case "weekly":
-          monthlyAmount = expense.amount * 4.33; // Approximate
+          monthlyAmount = expense.amount * 4.33;
           break;
         case "biweekly":
-          monthlyAmount = expense.amount * 2.17; // Approximate
+          monthlyAmount = expense.amount * 2.17;
           break;
         case "monthly":
           monthlyAmount = expense.amount;
@@ -155,6 +177,76 @@ router.get("/monthly-impact", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Failed to calculate monthly impact" });
+  }
+});
+
+// GET: Fetch upcoming recurring expenses for the next N days
+router.get("/upcoming/:days?", async (req, res) => {
+  try {
+    if (!req.user || !req.user.sub) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No user info in token" });
+    }
+
+    const userId = req.user.sub;
+    const daysAhead = parseInt(req.params.days) || 7;
+    const today = new Date();
+    const endDate = new Date();
+    endDate.setDate(today.getDate() + daysAhead);
+
+    const recurringExpenses = await RecurringExpense.find({
+      userId,
+      isActive: true,
+      $or: [{ endDate: null }, { endDate: { $gte: today } }],
+    });
+
+    const upcoming = [];
+
+    recurringExpenses.forEach((expense) => {
+      const { frequency, startDate, amount, description, category } = expense;
+      let nextDate = new Date(startDate);
+
+      while (nextDate < today) {
+        switch (frequency) {
+          case "daily":
+            nextDate.setDate(nextDate.getDate() + 1);
+            break;
+          case "weekly":
+            nextDate.setDate(nextDate.getDate() + 7);
+            break;
+          case "biweekly":
+            nextDate.setDate(nextDate.getDate() + 14);
+            break;
+          case "monthly":
+            nextDate.setMonth(nextDate.getMonth() + 1);
+            break;
+          case "yearly":
+            nextDate.setFullYear(nextDate.getFullYear() + 1);
+            break;
+          default:
+            nextDate = null;
+        }
+      }
+
+      if (nextDate && nextDate <= endDate) {
+        upcoming.push({
+          description,
+          category,
+          amount,
+          nextDate,
+        });
+      }
+    });
+
+    upcoming.sort((a, b) => a.nextDate - b.nextDate);
+
+    res.json(upcoming);
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ message: "Failed to fetch upcoming recurring expenses" });
   }
 });
 
