@@ -51,6 +51,7 @@ app.use((err, req, res, next) => {
 // Import routers
 const expensesRouter = require('./routes/expenses');
 const budgetRouter = require('./routes/budget');
+const recurringRouter = require('./routes/recurring');
 
 // Protect API routes with jwtCheck middleware
 app.use('/api/expenses', jwtCheck, expensesRouter);
@@ -58,6 +59,7 @@ app.use('/api/budget', jwtCheck, (req, res, next) => {
   console.log('Decoded JWT:', req.user);
   next();
 }, budgetRouter);
+app.use('/api/recurring', jwtCheck, recurringRouter);
 
 app.get('/api/test-auth', jwtCheck, (req, res) => {
   console.log('✅ Test route hit. Decoded token:', req.user);
