@@ -10,7 +10,6 @@ const BudgetManager = () => {
     const fetchBudget = async () => {
       try {
         const token = await getAccessTokenSilently();
-        console.log('Budget token:', token); // Debug token here
 
         const res = await fetch('https://spendy-beta.onrender.com/api/budget', {
           method: 'GET',
@@ -38,7 +37,6 @@ const BudgetManager = () => {
     e.preventDefault();
     try {
       const token = await getAccessTokenSilently();
-      console.log('POST Budget token:', token); // Debug token here
 
       const res = await fetch('https://spendy-beta.onrender.com/api/budget', {
         method: 'POST',

@@ -6,7 +6,7 @@ const { calculateForecast, getDaysIntoMonth } = require("../utils/forecast");
 
 // GET /api/budget - Fetch budget for logged-in user
 router.get('/', async (req, res) => {
-  console.log('GET /api/budget hit');
+  // GET /api/budget hit
 
   try {
     if (!req.user || !req.user.sub) {
@@ -31,7 +31,7 @@ router.get('/', async (req, res) => {
 
 // POST /api/budget - Create or update budget
 router.post('/', async (req, res) => {
-  console.log('POST /api/budget hit');
+  // POST /api/budget hit
 
   try {
     if (!req.user || !req.user.sub) {

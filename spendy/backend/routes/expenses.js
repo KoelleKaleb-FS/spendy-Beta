@@ -5,7 +5,7 @@ const Budget = require('../models/Budget');
 
 // GET: Fetch all expenses for logged-in user
 router.get('/', async (req, res) => {
-  console.log('Received token user info:', req.user);
+  // Received token user info
 
   try {
     const userId = req.user.sub;
@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
 
 // POST: Add a new expense and update budget
 router.post('/', async (req, res) => {
-  console.log('User info:', req.user);
+  // User info
 
   try {
     const userId = req.user.sub;
@@ -47,7 +47,7 @@ router.post('/', async (req, res) => {
 
 // PUT: Update an existing expense and update budget
 router.put('/:id', async (req, res) => {
-  console.log('User info:', req.user);
+  // User info
 
   try {
     const userId = req.user.sub;
@@ -78,7 +78,7 @@ router.put('/:id', async (req, res) => {
 
 // DELETE: Remove an expense and update budget
 router.delete('/:id', async (req, res) => {
-  console.log('User info:', req.user);
+  // User info
 
   try {
     const userId = req.user.sub;
