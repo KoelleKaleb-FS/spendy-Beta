@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth0 } from '@auth0/auth0-react';
-import styles from '../styles/BudgetOverview.module.css';
-import ExpenseTracker from './ExpenseTracker';
-import SummaryCards from './SummaryCards';
+import React, { useState, useEffect, useCallback } from "react";
+import { useAuth0 } from "@auth0/auth0-react";
+import styles from "../styles/BudgetOverview.module.css";
+import ExpenseTracker from "./ExpenseTracker";
+import SummaryCards from "./SummaryCards";
+import BudgetForecasting from "./BudgetForecasting";
+import RecurringExpenses from "./RecurringExpenses";
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://spendy-beta.onrender.com/api';
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 function BudgetOverview() {
   const { getAccessTokenSilently, isAuthenticated } = useAuth0();
@@ -12,36 +14,36 @@ function BudgetOverview() {
   const [budgetData, setBudgetData] = useState(null);
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const fetchBudgetData = useCallback(async () => {
     if (!isAuthenticated) return;
 
     try {
       const token = await getAccessTokenSilently({
-        audience: 'https://spendy-api',
+        audience: "https://spendy-api",
       });
 
-      const response = await fetch(`${API_URL}/budget`, {
+      const response = await fetch(`${API_URL}/api/budget`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       if (response.status === 404) {
-        setError('No budget found for your account.');
+        setError("No budget found for your account.");
         setBudgetData(null);
         return;
       }
 
       if (!response.ok) {
-        throw new Error('Failed to fetch budget data');
+        throw new Error("Failed to fetch budget data");
       }
 
       const data = await response.json();
       setBudgetData(data);
-      setError('');
+      setError("");
     } catch (err) {
       setError(err.message);
       setBudgetData(null);
@@ -53,30 +55,33 @@ function BudgetOverview() {
 
     try {
       const token = await getAccessTokenSilently({
-        audience: 'https://spendy-api',
+        audience: "https://spendy-api",
       });
 
-      const response = await fetch(`${API_URL}/expenses`, {
+      const response = await fetch(`${API_URL}/api/expenses`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch expenses');
+        throw new Error("Failed to fetch expenses");
       }
 
       const data = await response.json();
       if (Array.isArray(data)) {
         const cleanedData = data.map((exp) => ({
           ...exp,
-          amount: typeof exp.amount === 'string' ? parseFloat(exp.amount) : exp.amount,
+          amount:
+            typeof exp.amount === "string"
+              ? parseFloat(exp.amount)
+              : exp.amount,
         }));
         setExpenses(cleanedData);
-        setError('');
+        setError("");
       } else {
-        setError('Unexpected expenses API response format.');
+        setError("Unexpected expenses API response format.");
       }
     } catch (err) {
       setError(err.message);
@@ -107,7 +112,7 @@ function BudgetOverview() {
       {loading ? (
         <p>Loading your data...</p>
       ) : error ? (
-        <p style={{ color: 'red' }}>{error}</p>
+        <p style={{ color: "red" }}>{error}</p>
       ) : (
         <>
           <SummaryCards expenses={expenses} budgetData={budgetData} />
@@ -115,6 +120,8 @@ function BudgetOverview() {
             budgetData={budgetData}
             refreshBudget={refreshAllData}
           />
+          <BudgetForecasting />
+          <RecurringExpenses />
         </>
       )}
     </div>

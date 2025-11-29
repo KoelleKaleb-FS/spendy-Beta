@@ -1,11 +1,11 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Expense = require('../models/Expense');
-const Budget = require('../models/Budget');
+const Expense = require("../models/Expense");
+const Budget = require("../models/Budget");
 
 // GET: Fetch all expenses for logged-in user
-router.get('/', async (req, res) => {
-  console.log('Received token user info:', req.user);
+router.get("/", async (req, res) => {
+  // Received token user info
 
   try {
     const userId = req.user.sub;
@@ -13,13 +13,13 @@ router.get('/', async (req, res) => {
     res.json(expenses);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Failed to fetch expenses' });
+    res.status(500).json({ message: "Failed to fetch expenses" });
   }
 });
 
 // POST: Add a new expense and update budget
-router.post('/', async (req, res) => {
-  console.log('User info:', req.user);
+router.post("/", async (req, res) => {
+  // User info
 
   try {
     const userId = req.user.sub;
@@ -41,13 +41,13 @@ router.post('/', async (req, res) => {
     res.status(201).json(savedExpense);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Failed to add expense' });
+    res.status(500).json({ message: "Failed to add expense" });
   }
 });
 
 // PUT: Update an existing expense and update budget
-router.put('/:id', async (req, res) => {
-  console.log('User info:', req.user);
+router.put("/:id", async (req, res) => {
+  // User info
 
   try {
     const userId = req.user.sub;
@@ -56,7 +56,9 @@ router.put('/:id', async (req, res) => {
 
     const expense = await Expense.findOne({ _id: expenseId, userId });
     if (!expense) {
-      return res.status(404).json({ message: 'Expense not found or unauthorized' });
+      return res
+        .status(404)
+        .json({ message: "Expense not found or unauthorized" });
     }
 
     expense.description = description;
@@ -72,13 +74,13 @@ router.put('/:id', async (req, res) => {
     res.json(updatedExpense);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Failed to update expense' });
+    res.status(500).json({ message: "Failed to update expense" });
   }
 });
 
 // DELETE: Remove an expense and update budget
-router.delete('/:id', async (req, res) => {
-  console.log('User info:', req.user);
+router.delete("/:id", async (req, res) => {
+  // User info
 
   try {
     const userId = req.user.sub;
@@ -86,27 +88,30 @@ router.delete('/:id', async (req, res) => {
 
     const expense = await Expense.findOneAndDelete({ _id: expenseId, userId });
     if (!expense) {
-      return res.status(404).json({ message: 'Expense not found or unauthorized' });
+      return res
+        .status(404)
+        .json({ message: "Expense not found or unauthorized" });
     }
 
     // Update budget after deleting expense
     await recalculateBudget(userId);
 
-    res.json({ message: 'Expense deleted and budget updated' });
+    res.json({ message: "Expense deleted and budget updated" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Failed to delete expense' });
+    res.status(500).json({ message: "Failed to delete expense" });
   }
 });
 
 // Helper: Recalculate budget expenses/remaining
 async function recalculateBudget(userId) {
-  const totalExpenses = (
-    await Expense.aggregate([
-      { $match: { userId } },
-      { $group: { _id: null, total: { $sum: "$amount" } } }
-    ])
-  )[0]?.total || 0;
+  const totalExpenses =
+    (
+      await Expense.aggregate([
+        { $match: { userId } },
+        { $group: { _id: null, total: { $sum: "$amount" } } },
+      ])
+    )[0]?.total || 0;
 
   let budget = await Budget.findOne({ userId });
 
