@@ -3,8 +3,9 @@ import { useAuth0 } from '@auth0/auth0-react';
 import styles from '../styles/BudgetOverview.module.css';
 import ExpenseTracker from './ExpenseTracker';
 import SummaryCards from './SummaryCards';
+import BudgetForecasting from './BudgetForecasting';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://spendy-beta.onrender.com/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 function BudgetOverview() {
   const { getAccessTokenSilently, isAuthenticated } = useAuth0();
@@ -22,7 +23,7 @@ function BudgetOverview() {
         audience: 'https://spendy-api',
       });
 
-      const response = await fetch(`${API_URL}/budget`, {
+      const response = await fetch(`${API_URL}/api/budget`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -56,7 +57,7 @@ function BudgetOverview() {
         audience: 'https://spendy-api',
       });
 
-      const response = await fetch(`${API_URL}/expenses`, {
+      const response = await fetch(`${API_URL}/api/expenses`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -115,6 +116,7 @@ function BudgetOverview() {
             budgetData={budgetData}
             refreshBudget={refreshAllData}
           />
+          <BudgetForecasting />
         </>
       )}
     </div>
