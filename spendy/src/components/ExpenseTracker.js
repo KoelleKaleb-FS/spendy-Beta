@@ -67,7 +67,11 @@ function ExpenseTracker({ budgetData, refreshBudget }) {
           scope: 'read:expenses write:budget',
         });
 
+<<<<<<< HEAD
         const expensesResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/expenses`, {
+=======
+        const expensesResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/expenses`, {
+>>>>>>> origin/feature/recurring-expenses
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
