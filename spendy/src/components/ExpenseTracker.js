@@ -47,6 +47,9 @@ function ExpenseTracker({ budgetData, refreshBudget }) {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
+  // Base API URL (use env var if set, otherwise default to localhost)
+  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
   // New state for budget goals (default example values)
   const [budgetGoals, setBudgetGoals] = useState({
     Food: 500,
@@ -67,11 +70,7 @@ function ExpenseTracker({ budgetData, refreshBudget }) {
           scope: 'read:expenses write:budget',
         });
 
-<<<<<<< HEAD
-        const expensesResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/expenses`, {
-=======
-        const expensesResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/expenses`, {
->>>>>>> origin/feature/recurring-expenses
+  const expensesResponse = await fetch(`${API_BASE}/api/expenses`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -97,7 +96,7 @@ function ExpenseTracker({ budgetData, refreshBudget }) {
     }
 
     fetchExpenses();
-  }, [isAuthenticated, getAccessTokenSilently]);
+  }, [isAuthenticated, getAccessTokenSilently, API_BASE]);
 
   const filteredExpenses = expenses.filter((expense) => {
     const expenseDate = new Date(expense.date);
@@ -132,7 +131,7 @@ function ExpenseTracker({ budgetData, refreshBudget }) {
 
       const expenseToSend = { ...newExpense, amount: parsedAmount };
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/expenses`, {
+      const response = await fetch(`${API_BASE}/api/expenses`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -170,7 +169,7 @@ function ExpenseTracker({ budgetData, refreshBudget }) {
 
       const expenseToSend = { ...expense, amount: parsedAmount };
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/expenses/${expense._id}`, {
+      const response = await fetch(`${API_BASE}/api/expenses/${expense._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -204,7 +203,7 @@ function ExpenseTracker({ budgetData, refreshBudget }) {
       audience: 'https://spendy-api',
     });
 
-    const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/expenses/${id}`, {
+    const response = await fetch(`${API_BASE}/api/expenses/${id}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`,
