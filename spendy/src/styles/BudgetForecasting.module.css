@@ -107,6 +107,13 @@
   margin-bottom: 1.5rem;
 }
 
+.chartNote {
+  font-size: 0.9rem;
+  color: #718096;
+  margin-bottom: 1rem;
+  margin-top: -1rem;
+}
+
 .categoryDetails {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
