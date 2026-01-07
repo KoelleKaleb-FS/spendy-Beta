@@ -43,7 +43,7 @@ function BudgetForecasting() {
 
       // Category forecasts
       const categoryRes = await fetch(
-        `${API_URL}/api/budget/forecast/by-category`,
+        `${API_URL}/budget/forecast/by-category`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (categoryRes.ok) {
@@ -56,7 +56,7 @@ function BudgetForecasting() {
       }
 
       // Upcoming recurring expenses
-      const upcomingRes = await fetch(`${API_URL}/api/recurring/upcoming/7`, {
+      const upcomingRes = await fetch(`${API_URL}/recurring/upcoming/7`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (upcomingRes.ok) setUpcomingExpenses(await upcomingRes.json());

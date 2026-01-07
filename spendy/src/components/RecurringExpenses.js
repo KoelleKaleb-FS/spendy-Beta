@@ -46,7 +46,7 @@ function RecurringExpenses() {
       setError("");
 
       // Fetch monthly impact
-      const impactRes = await fetch(`${API_URL}/api/recurring/monthly-impact`, {
+      const impactRes = await fetch(`${API_URL}/recurring/monthly-impact`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
