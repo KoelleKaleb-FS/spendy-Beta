@@ -24,7 +24,7 @@ function BudgetOverview() {
         audience: "https://spendy-api",
       });
 
-      const response = await fetch(`${API_URL}/api/budget`, {
+      const response = await fetch(`${API_URL}/budget`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -58,7 +58,7 @@ function BudgetOverview() {
         audience: "https://spendy-api",
       });
 
-      const response = await fetch(`${API_URL}/api/expenses`, {
+      const response = await fetch(`${API_URL}/expenses`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
