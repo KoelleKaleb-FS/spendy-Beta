@@ -70,7 +70,7 @@ function ExpenseTracker({ budgetData, refreshBudget }) {
           scope: "read:expenses write:budget",
         });
 
-        const expensesResponse = await fetch(`${API_BASE}/api/expenses`, {
+        const expensesResponse = await fetch(`${API_BASE}/expenses`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

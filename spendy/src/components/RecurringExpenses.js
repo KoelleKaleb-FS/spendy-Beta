@@ -32,7 +32,7 @@ function RecurringExpenses() {
         audience: "https://spendy-api",
       });
 
-      const res = await fetch(`${API_URL}/api/recurring`, {
+      const res = await fetch(`${API_URL}/recurring`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

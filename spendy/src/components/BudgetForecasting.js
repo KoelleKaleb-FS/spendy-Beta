@@ -35,7 +35,7 @@ function BudgetForecasting() {
       });
 
       // Overall forecast
-      const forecastRes = await fetch(`${API_URL}/api/budget/forecast`, {
+      const forecastRes = await fetch(`${API_URL}/budget/forecast`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!forecastRes.ok) throw new Error("Failed to fetch forecast");
