@@ -26,7 +26,7 @@ function Footer() {
       </div>
       <div className={styles.contact}>
         <p>
-          Contact us: <a href="mailto:support@spendy.com">support@spendy.com</a> | +1 (555) 123-4567
+          Contact us: <a href="kkoelle@student.fullsail.edu">support@spendy.com</a> | +1 (555) 123-4567
         </p>
       </div>
     </footer>
